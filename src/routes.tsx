@@ -20,9 +20,9 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { cn } from '@/lib/utils'
 import UuidTool from '@/tools/uuid'
 import Base64Tool from '@/tools/base64'
+import JwtTool from '@/tools/jwt'
 
 // Placeholder components
-const JwtTool = () => <div className="p-4">JWT Tool Placeholder</div>
 const PlaceholderTool = ({ name }: { name: string }) => <div className="p-4">{name} Placeholder</div>
 
 function HomePage() {
