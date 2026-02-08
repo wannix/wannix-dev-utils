@@ -15,13 +15,13 @@
 
 ```
 I'm building "Dev Utilities Hub" - a developer utilities web app. I've attached:
-1. project-constitution.md (full technical spec)
+1. constitution.md (full technical spec)
 2. UI inspiration screenshots (for design reference)
 
 TASK: Create a detailed, actionable task list following the constitution strictly.
 
 REQUIREMENTS:
-- Read project-constitution.md thoroughly
+- Read constitution.md thoroughly
 - Analyze the UI screenshots to extract design patterns (layout, spacing, colors, component style)
 - Create a phased task list with validation checkpoints
 - Identify any potential blockers or unclear requirements
@@ -57,7 +57,7 @@ Do NOT start coding yet. Wait for my approval of this plan.
 ```
 Approved! Execute Phase 1: Project Setup.
 
-CONSTITUTION: See project-constitution.md (already in context)
+CONSTITUTION: See constitution.md (already in context)
 
 TASKS:
 1. Initialize Vite + React + TypeScript project
@@ -89,7 +89,7 @@ STOP after validation. Wait for next prompt.
 ## 🎨 PROMPT 3: Theme System & Layout
 
 ```
-CONSTITUTION: project-constitution.md (in context)
+CONSTITUTION: constitution.md (in context)
 
 TASK: Implement theme system and app layout shell.
 
@@ -130,7 +130,7 @@ Show me the key component code for review before proceeding.
 ## 🔧 PROMPT 4: Tool Infrastructure
 
 ```
-CONSTITUTION: project-constitution.md
+CONSTITUTION: constitution.md
 
 TASK: Create tool plugin architecture and shared utilities.
 
@@ -166,7 +166,7 @@ Run `npm run type-check` and show results.
 ## 🛠️ PROMPT 5: First Tool - Base64 Encoder/Decoder
 
 ```
-CONSTITUTION: project-constitution.md
+CONSTITUTION: constitution.md
 
 TASK: Build Base64 tool following plugin architecture.
 
@@ -215,7 +215,7 @@ Test all edge cases. Show screenshots of working tool.
 ## 🔑 PROMPT 6: JWT Decoder Tool
 
 ```
-CONSTITUTION: project-constitution.md
+CONSTITUTION: constitution.md
 
 TASK: Build JWT Decoder (read-only, no verification).
 
@@ -250,7 +250,7 @@ Provide test JWT for me to validate.
 ## 🆔 PROMPT 7: UUID Generator Tool
 
 ```
-CONSTITUTION: project-constitution.md
+CONSTITUTION: constitution.md
 
 TASK: Build UUID v4 Generator.
 
@@ -285,7 +285,7 @@ Show demo with 5 generated UUIDs.
 ## 🔗 PROMPT 8: Tool Integration & Navigation
 
 ```
-CONSTITUTION: project-constitution.md
+CONSTITUTION: constitution.md
 
 TASK: Wire up all tools to navigation.
 
@@ -319,7 +319,7 @@ Test navigation flow. Record video/gif if possible.
 ## 📱 PROMPT 9: PWA Configuration
 
 ```
-CONSTITUTION: project-constitution.md (PWA Requirements section)
+CONSTITUTION: constitution.md (PWA Requirements section)
 
 TASK: Configure PWA with offline support.
 
@@ -357,7 +357,7 @@ Show Lighthouse PWA report.
 ## 🎯 PROMPT 10: Performance Optimization
 
 ```
-CONSTITUTION: project-constitution.md (Performance Targets)
+CONSTITUTION: constitution.md (Performance Targets)
 
 TASK: Optimize for 100/100 Lighthouse score.
 
@@ -454,7 +454,7 @@ CONTEXT:
 - Error message: [paste error]
 - What I tried: [your attempts]
 
-CONSTITUTION: project-constitution.md
+CONSTITUTION: constitution.md
 
 TASK: Debug and fix following constitution constraints.
 
@@ -472,7 +472,7 @@ Show fixed code + explanation.
 ## 💡 TIPS FOR OPTIMAL TOKEN USAGE
 
 ### DO:
-✅ Reference files by path: "See project-constitution.md"
+✅ Reference files by path: "See constitution.md"
 ✅ Use specific task numbers: "Execute Task 1.1 from the plan"
 ✅ Request validation checkpoints: "Stop after validation"
 ✅ Ask for confirmation: "Show code for review before proceeding"
@@ -541,4 +541,4 @@ Before marking project complete, verify:
 **Generated**: February 8, 2026
 **For**: Dev Utilities Hub
 **Agent**: Claude Code
-**Constitution**: project-constitution.md
+**Constitution**: constitution.md

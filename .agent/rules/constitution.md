@@ -22,7 +22,7 @@ Create a high-performance, production-grade dashboard containing modular develop
 
 ### UI & Styling
 - **CSS Framework**: Tailwind CSS (utility-first approach)
-- **Component Library**: shadcn/ui (accessible, customizable components)
+- **Component Library**: shadcn/ui (customizable components)
 - **UI Primitives**: Radix UI (comes with shadcn/ui)
 - **Icons**: Lucide React (consistent, clean iconography)
 - **Animations**: Tailwind transitions + Framer Motion (for complex animations if needed)
@@ -192,10 +192,9 @@ interface AppStore {
 4. **Loading States** - Show processing for long operations (if any)
 5. **Responsive Design** - Works on mobile, tablet, and desktop
 6. **Keyboard Shortcuts** - Support common shortcuts (Ctrl+C, Ctrl+V, Esc to clear)
-7. **Accessibility** - WCAG 2.1 AA compliant (proper ARIA labels, keyboard navigation)
 
 ### Performance Targets 🎯
-- **Lighthouse Score**: 100/100 (Performance, Accessibility, Best Practices, SEO)
+- **Lighthouse Score**: 100/100 (Performance, Best Practices, SEO)
 - **Bundle Size**: < 200KB gzipped for initial load
 - **First Contentful Paint (FCP)**: < 1.5s
 - **Time to Interactive (TTI)**: < 3.0s
@@ -220,14 +219,6 @@ interface AppStore {
   - Static assets: Cache-first
   - HTML: Network-first with cache fallback
   - API calls: None (client-side only)
-
-### Accessibility Standards ♿
-- **Keyboard Navigation**: All features accessible via keyboard
-- **Screen Readers**: Proper ARIA labels and semantic HTML
-- **Focus Management**: Visible focus indicators, logical tab order
-- **Color Contrast**: WCAG AA compliance (4.5:1 for normal text)
-- **Reduced Motion**: Respect `prefers-reduced-motion` setting
-- **Alternative Text**: All icons have descriptive labels
 
 ## Development Workflow 🔄
 
@@ -262,7 +253,6 @@ npm run lighthouse    # Run Lighthouse audit
 - **Unit Tests**: Critical utility functions (encoding, decoding, parsing)
 - **Component Tests**: Tool components with React Testing Library
 - **E2E Tests**: User workflows with Playwright (optional for v1)
-- **Accessibility Tests**: Automated a11y checks with axe-core
 
 ## Feature Roadmap 🗺️
 
@@ -303,7 +293,6 @@ npm run lighthouse    # Run Lighthouse audit
 - Bundle size < 200KB gzipped
 - 100/100 Lighthouse score
 - 0 TypeScript errors
-- 0 accessibility violations
 - < 100ms tool processing time
 
 ### User Experience Metrics
