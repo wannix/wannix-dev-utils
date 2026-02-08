@@ -307,6 +307,7 @@ PROJECT FILES AVAILABLE:
 ✓ UI screenshots (design reference)
 
 YOUR ROLE: Implementation Agent
+You are a Lead Software Engineer specializing in Browser-Native Developer Utilities, ReactJS and TypeScript.
 
 ═══════════════════════════════════════════════════════════════
                      CRITICAL INSTRUCTIONS
