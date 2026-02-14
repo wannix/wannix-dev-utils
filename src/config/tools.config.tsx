@@ -1,9 +1,8 @@
 import {
     FileText,
     Key,
-    FileCode,
+    FileCode2,
     FileJson,
-    Shield,
     Clock,
     Fingerprint,
     Hash,
@@ -33,6 +32,10 @@ export interface ToolConfig {
 const Base64Tool = React.lazy(() => import('@/tools/base64'))
 const JwtTool = React.lazy(() => import('@/tools/jwt'))
 const UuidTool = React.lazy(() => import('@/tools/uuid'))
+
+const TimestampTool = React.lazy(() => import('@/tools/timestamp'))
+const SpringYamlTool = React.lazy(() => import('@/tools/spring-yaml'))
+const JsonYamlTool = React.lazy(() => import('@/tools/json-yaml'))
 
 // Placeholder for tools not yet implemented
 const PlaceholderTool = ({ name }: { name: string }) => <div className="p-8 text-center text-muted-foreground" > {name} Tool Coming Soon </div>
@@ -70,19 +73,20 @@ export const tools: ToolConfig[] = [
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'conversion',
-        component: () => <PlaceholderTool name="Timestamp Converter" />
+        component: TimestampTool
     },
     {
         id: 'spring-yaml',
         title: 'Spring YAML Converter',
-        description: 'Convert Spring Boot properties files to YAML format and vice versa.',
-        icon: FileCode,
+        description: 'Convert between Spring Boot properties and YAML configuration formats.',
+        icon: FileCode2,
         href: '/tools/spring-yaml',
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'conversion',
-        component: () => <PlaceholderTool name="Spring YAML Converter" />
+        component: SpringYamlTool
     },
+    // Generators
     {
         id: 'json-yaml',
         title: 'JSON <> YAML Converter',
@@ -92,19 +96,9 @@ export const tools: ToolConfig[] = [
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'conversion',
-        component: () => <PlaceholderTool name="JSON <> YAML Converter" />
+        component: JsonYamlTool
     },
-    {
-        id: 'certificate',
-        title: 'Certificate Decoder',
-        description: 'Decode and inspect X.509 certificates to view details like expiration, issuer, and subject.',
-        icon: Shield,
-        href: '/tools/certificate',
-        iconColor: 'text-primary',
-        bgColor: 'bg-primary/10',
-        category: 'conversion',
-        component: () => <PlaceholderTool name="Certificate Decoder" />
-    },
+
 
     // Generation & Building
     {
