@@ -175,6 +175,7 @@ interface AppStore {
 - Consistent spacing using Tailwind's spacing scale (4px base unit)
 - Responsive design: mobile-first approach
 - Breakpoints: sm (640px), md (768px), lg (1024px), xl (1280px)
+- **Viewport Constraints**: Tool containers should reserve ~5% margin from the bottom edge (`calc(95vh - ...)`).
 
 ## Constraints & Requirements ⚠️
 
