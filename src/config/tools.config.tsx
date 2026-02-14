@@ -37,8 +37,12 @@ const TimestampTool = React.lazy(() => import('@/tools/timestamp'))
 const SpringYamlTool = React.lazy(() => import('@/tools/spring-yaml'))
 const JsonYamlTool = React.lazy(() => import('@/tools/json-yaml'))
 
+const HashTool = React.lazy(() => import('@/tools/hash'))
+
 // Placeholder for tools not yet implemented
 const PlaceholderTool = ({ name }: { name: string }) => <div className="p-8 text-center text-muted-foreground" > {name} Tool Coming Soon </div>
+
+const CurlTool = React.lazy(() => import('@/tools/curl'))
 
 export const tools: ToolConfig[] = [
     // Conversion & Parsing
@@ -99,7 +103,6 @@ export const tools: ToolConfig[] = [
         component: JsonYamlTool
     },
 
-
     // Generation & Building
     {
         id: 'uuid',
@@ -115,13 +118,13 @@ export const tools: ToolConfig[] = [
     {
         id: 'hash',
         title: 'Hash Generator',
-        description: 'Generate cryptographic hashes (MD5, SHA-1, SHA-256, etc.) from text or files.',
+        description: 'Generate cryptographic hashes (MD5, SHA-1, SHA-256, etc.) and HMAC signatures from text.',
         icon: Hash,
         href: '/tools/hash',
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'generation',
-        component: () => <PlaceholderTool name="Hash Generator" />
+        component: HashTool
     },
     {
         id: 'curl',
@@ -132,7 +135,7 @@ export const tools: ToolConfig[] = [
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'generation',
-        component: () => <PlaceholderTool name="Curl Builder" />
+        component: CurlTool
     },
 
     // Validation & Debugging
