@@ -35,12 +35,12 @@ const TokenStatusBanner = ({ payload }: { payload: Record<string, unknown> | nul
     }
 
     return (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 mb-6">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                    <h4 className="text-sm font-semibold text-emerald-500 mb-1">Token Active</h4>
-                    <p className="text-xs text-emerald-500/90">Expires: {expirationDate}</p>
+                    <h4 className="text-sm font-semibold text-primary mb-1">Token Active</h4>
+                    <p className="text-xs text-primary/90">Expires: {expirationDate}</p>
                 </div>
             </div>
         </div>
@@ -93,7 +93,7 @@ const DataDisplay = ({
                                 className="h-7 px-2 text-xs gap-1.5 bg-background/50 hover:bg-background border-border/20"
                                 onClick={() => copyToClipboard(jsonString)}
                             >
-                                {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                                {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
                                 Copy
                             </Button>
                         </div>

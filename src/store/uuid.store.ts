@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware'
 export interface UuidHistoryItem {
     id: string
     value: string
+    rawValue: string // Full content for copying
     timestamp: number
     type: 'uuid-v4' | 'ulid' | 'ksuid'
     format: {
@@ -15,7 +16,7 @@ export interface UuidHistoryItem {
 
 interface UuidState {
     history: UuidHistoryItem[]
-    addToHistory: (value: string, type: UuidHistoryItem['type'], format: UuidHistoryItem['format']) => void
+    addToHistory: (value: string, rawValue: string, type: UuidHistoryItem['type'], format: UuidHistoryItem['format']) => void
     clearHistory: () => void
 }
 
@@ -23,10 +24,11 @@ export const useUuidStore = create<UuidState>()(
     persist(
         (set) => ({
             history: [],
-            addToHistory: (value, type, format) => set((state) => {
+            addToHistory: (value, rawValue, type, format) => set((state) => {
                 const newItem: UuidHistoryItem = {
                     id: crypto.randomUUID(),
                     value,
+                    rawValue,
                     timestamp: Date.now(),
                     type,
                     format

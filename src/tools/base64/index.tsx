@@ -118,7 +118,7 @@ export default function Base64Tool() {
                                 variant="ghost"
                                 onClick={() => copyToClipboard(output)}
                                 disabled={!output}
-                                className={copied ? "text-green-500" : "text-muted-foreground"}
+                                className={copied ? "text-primary" : "text-muted-foreground"}
                             >
                                 {copied ? (
                                     <><Check className="mr-2 h-3.5 w-3.5" /> Copied</>

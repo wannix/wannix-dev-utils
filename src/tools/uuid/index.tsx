@@ -47,7 +47,7 @@ export default function UuidTool() {
                 ? newUuids[0]
                 : `${newUuids[0]} (+${newUuids.length - 1} more)`
 
-            addToHistory(summaryValue, idType, {
+            addToHistory(summaryValue, resultArgs, idType, {
                 hyphens,
                 uppercase,
                 braces
@@ -83,7 +83,7 @@ export default function UuidTool() {
                 onClick={() => copyToClipboard(text)}
                 title="Copy"
             >
-                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
             </Button>
         )
     }
@@ -173,14 +173,14 @@ export default function UuidTool() {
 
                     {/* History Section - Scrollable */}
                     <Card className="border-border/50 bg-card shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
-                        <CardHeader className="pb-3 border-b border-border/40 bg-muted/20 flex flex-row items-center justify-between shrink-0">
+                        <CardHeader className="py-2 px-4 border-b border-border/40 bg-muted/20 flex flex-row items-center justify-between shrink-0 h-10">
                             <div className="flex items-center gap-2">
-                                <History className="h-4 w-4 text-muted-foreground" />
-                                <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">History</CardTitle>
+                                <History className="h-3.5 w-3.5 text-muted-foreground" />
+                                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">History</CardTitle>
                             </div>
                             {history.length > 0 && (
                                 <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={clearHistory} title="Clear History">
-                                    <Trash2 className="h-3.5 w-3.5" />
+                                    <Trash2 className="h-3 w-3" />
                                 </Button>
                             )}
                         </CardHeader>
@@ -192,9 +192,9 @@ export default function UuidTool() {
                                     {history.map((item) => (
                                         <div key={item.id} className="p-3 hover:bg-muted/30 transition-colors group">
                                             <div className="flex items-start justify-between gap-2">
-                                                <div className="font-mono text-xs break-all text-foreground/80 line-clamp-2">{item.value}</div>
+                                                <div className="font-mono text-xs break-all text-foreground/80">{item.value}</div>
                                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <CopyItem text={item.value} />
+                                                    <CopyItem text={item.rawValue || item.value} />
                                                 </div>
                                             </div>
                                             <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
@@ -230,7 +230,7 @@ export default function UuidTool() {
                                 className="gap-2"
                                 onClick={handleCopy}
                             >
-                                {hasCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                                {hasCopied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                                 Copy All
                             </Button>
                         </div>

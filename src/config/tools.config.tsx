@@ -1,0 +1,200 @@
+import {
+    FileText,
+    Key,
+    FileCode,
+    FileJson,
+    Shield,
+    Clock,
+    Fingerprint,
+    Hash,
+    Terminal,
+    GitCompare,
+    Timer,
+    Image,
+    Braces,
+    Keyboard,
+    type LucideIcon
+} from 'lucide-react'
+import React from 'react'
+
+export interface ToolConfig {
+    id: string
+    title: string
+    description: string
+    icon: LucideIcon
+    href: string
+    iconColor?: string
+    bgColor?: string
+    category: 'conversion' | 'generation' | 'validation'
+    component: React.LazyExoticComponent<React.ComponentType<any>> | React.ComponentType<any>
+}
+
+// Lazy load tool components
+const Base64Tool = React.lazy(() => import('@/tools/base64'))
+const JwtTool = React.lazy(() => import('@/tools/jwt'))
+const UuidTool = React.lazy(() => import('@/tools/uuid'))
+
+// Placeholder for tools not yet implemented
+const PlaceholderTool = ({ name }: { name: string }) => <div className="p-8 text-center text-muted-foreground" > {name} Tool Coming Soon </div>
+
+export const tools: ToolConfig[] = [
+    // Conversion & Parsing
+    {
+        id: 'base64',
+        title: 'Base64 Encoder/Decoder',
+        description: 'Encode text to Base64 or decode Base64 back to text. Supports UTF-8 characters.',
+        icon: FileText,
+        href: '/tools/base64',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'conversion',
+        component: Base64Tool
+    },
+    {
+        id: 'jwt',
+        title: 'JWT Decoder',
+        description: 'Decode and inspect JSON Web Tokens. View header, payload, and signature information.',
+        icon: Key,
+        href: '/tools/jwt',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'conversion',
+        component: JwtTool
+    },
+    {
+        id: 'timestamp',
+        title: 'Timestamp Converter',
+        description: 'Convert between Unix timestamps and human-readable dates for various timezones.',
+        icon: Clock,
+        href: '/tools/timestamp',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'conversion',
+        component: () => <PlaceholderTool name="Timestamp Converter" />
+    },
+    {
+        id: 'spring-yaml',
+        title: 'Spring YAML Converter',
+        description: 'Convert Spring Boot properties files to YAML format and vice versa.',
+        icon: FileCode,
+        href: '/tools/spring-yaml',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'conversion',
+        component: () => <PlaceholderTool name="Spring YAML Converter" />
+    },
+    {
+        id: 'json-yaml',
+        title: 'JSON <> YAML Converter',
+        description: 'Convert between JSON and YAML formats with real-time validation and preview.',
+        icon: FileJson,
+        href: '/tools/json-yaml',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'conversion',
+        component: () => <PlaceholderTool name="JSON <> YAML Converter" />
+    },
+    {
+        id: 'certificate',
+        title: 'Certificate Decoder',
+        description: 'Decode and inspect X.509 certificates to view details like expiration, issuer, and subject.',
+        icon: Shield,
+        href: '/tools/certificate',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'conversion',
+        component: () => <PlaceholderTool name="Certificate Decoder" />
+    },
+
+    // Generation & Building
+    {
+        id: 'uuid',
+        title: 'ID Generator',
+        description: 'Generate cryptographically secure UUID v4, ULID, and KSUID identifiers.',
+        icon: Fingerprint,
+        href: '/tools/uuid',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'generation',
+        component: UuidTool
+    },
+    {
+        id: 'hash',
+        title: 'Hash Generator',
+        description: 'Generate cryptographic hashes (MD5, SHA-1, SHA-256, etc.) from text or files.',
+        icon: Hash,
+        href: '/tools/hash',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'generation',
+        component: () => <PlaceholderTool name="Hash Generator" />
+    },
+    {
+        id: 'curl',
+        title: 'Curl Builder',
+        description: 'Build and test cURL commands with a visual interface.',
+        icon: Terminal,
+        href: '/tools/curl',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'generation',
+        component: () => <PlaceholderTool name="Curl Builder" />
+    },
+
+    // Validation & Debugging
+    {
+        id: 'diff',
+        title: 'Diff Checker',
+        description: 'Compare two text snippets and highlight differences.',
+        icon: GitCompare,
+        href: '/tools/diff',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'validation',
+        component: () => <PlaceholderTool name="Diff Checker" />
+    },
+    {
+        id: 'cron',
+        title: 'Cron Tester',
+        description: 'Test and debug cron expressions.',
+        icon: Timer,
+        href: '/tools/cron',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'validation',
+        component: () => <PlaceholderTool name="Cron Tester" />
+    },
+    {
+        id: 'svg',
+        title: 'SVG Optimizer',
+        description: 'Optimize SVG files by removing unnecessary metadata.',
+        icon: Image,
+        href: '/tools/svg',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'validation',
+        component: () => <PlaceholderTool name="SVG Optimizer" />
+    },
+    {
+        id: 'regex',
+        title: 'Regex Tester',
+        description: 'Test and debug regular expressions.',
+        icon: Braces,
+        href: '/tools/regex',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'validation',
+        component: () => <PlaceholderTool name="Regex Tester" />
+    },
+    {
+        id: 'keycode',
+        title: 'Keycode Info',
+        description: 'Get information about keyboard events and keycodes.',
+        icon: Keyboard,
+        href: '/tools/keycode',
+        iconColor: 'text-primary',
+        bgColor: 'bg-primary/10',
+        category: 'validation',
+        component: () => <PlaceholderTool name="Keycode Info" />
+    },
+]
