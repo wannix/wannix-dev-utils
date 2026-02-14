@@ -1,6 +1,6 @@
-export type Format = 'yaml' | 'properties'
+export type Format = "yaml" | "properties";
 
 export interface ConversionResult {
-    content: string
-    error?: string
+  content: string;
+  error?: string;
 }

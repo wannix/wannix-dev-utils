@@ -1,73 +1,163 @@
-# React + TypeScript + Vite
+# Developer Utilities Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A collection of browser-based developer tools built with React, TypeScript, and Tailwind CSS. All processing happens **locally in your browser** — no data is ever sent to a server.
 
-Currently, two official plugins are available:
+## ✨ Tools
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Tool | Description | Category |
+|---|---|---|
+| **Base64 Encoder/Decoder** | Encode/decode Base64 with UTF-8 support | Conversion |
+| **JWT Decoder** | Inspect JWT header, payload, and signature | Conversion |
+| **Timestamp Converter** | Convert Unix timestamps ↔ human-readable dates | Conversion |
+| **Spring YAML Converter** | Convert between `.properties` and YAML formats | Conversion |
+| **JSON ↔ YAML** | Bi-directional JSON/YAML converter | Conversion |
+| **UUID/ULID/KSUID Generator** | Generate unique identifiers with formatting options | Generation |
+| **Hash Generator** | MD5, SHA-1/256/512, RIPEMD-160, HMAC hashing | Generation |
+| **cURL Builder** | Construct cURL commands with headers and body | Generation |
+| **Regex Tester** | Test regex patterns with live matching and presets | Validation |
+| **Diff Checker** | Compare text with char/word/line/JSON diff modes | Validation |
+| **Cron Expression Tester** | Validate cron expressions with Quartz support | Validation |
+| **SVG Optimizer** | Optimize SVG files with SVGO (multi-pass) | Conversion |
+| **Keycode Info** | Inspect keyboard, mouse, wheel, and touch events | Validation |
 
-## React Compiler
+## 🛠 Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Framework**: React 18 + TypeScript 5
+- **Build Tool**: Vite 5
+- **Styling**: Tailwind CSS 3 + Radix UI primitives
+- **State**: Zustand, React hooks
+- **PWA**: vite-plugin-pwa (offline support via Service Worker)
+- **Routing**: React Router v6
 
-## Expanding the ESLint configuration
+## 🚀 Quick Start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Install dependencies
+npm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Start dev server (http://localhost:5173)
+npm run dev
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Production build
+npm run build
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Preview production build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📁 Project Structure
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── components/
+│   ├── layout/          # ToolShell, Navbar, ErrorBoundary, ToolSkeleton
+│   └── ui/              # Button, Input, Card, Tabs, etc. (shadcn/ui)
+├── config/
+│   └── tools.config.tsx # Tool registry (routes, icons, lazy imports)
+├── hooks/               # useCopyToClipboard, etc.
+├── lib/                 # cn() utility
+├── tools/               # Each tool in its own folder
+│   └── <tool>/
+│       ├── index.tsx           # Tool UI component
+│       ├── <tool>.types.ts     # TypeScript interfaces
+│       └── <tool>.utils.ts     # Pure logic (JSDoc-documented)
+└── routes.tsx           # Route definitions + homepage
+```
+
+## 📜 Available Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server with HMR |
+| `npm run build` | Type-check + production build |
+| `npm run preview` | Preview the production build |
+| `npm run type-check` | TypeScript compiler check (`tsc --noEmit`) |
+| `npm run lint` | ESLint with zero-warning policy |
+| `npm run format` | Format source files with Prettier |
+
+## 🐳 Deployment (AWS EKS)
+
+### Dockerfile
+
+```dockerfile
+# Build stage
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### nginx.conf
+
+```nginx
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+### Kubernetes Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-utilities-hub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dev-utilities-hub
+  template:
+    metadata:
+      labels:
+        app: dev-utilities-hub
+    spec:
+      containers:
+        - name: dev-utilities-hub
+          image: <ECR_REGISTRY>/dev-utilities-hub:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-utilities-hub
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: dev-utilities-hub
+```
+
+## 📝 License
+
+Private — internal use only.

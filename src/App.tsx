@@ -1,7 +1,7 @@
-import { ThemeProvider } from 'next-themes'
-import { BrowserRouter } from 'react-router-dom'
-import { Layout } from './components/layout/Layout'
-import { AppRoutes } from './routes'
+import { ThemeProvider } from "next-themes";
+import { BrowserRouter } from "react-router-dom";
+import { Layout } from "./components/layout/Layout";
+import { AppRoutes } from "./routes";
 
 function App(): JSX.Element {
   return (
@@ -12,7 +12,7 @@ function App(): JSX.Element {
         </Layout>
       </BrowserRouter>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;

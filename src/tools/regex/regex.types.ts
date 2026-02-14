@@ -1,17 +1,17 @@
 export interface RegexFlag {
-    key: string
-    label: string
-    description: string
+  key: string;
+  label: string;
+  description: string;
 }
 
 export interface RegexPreset {
-    label: string
-    pattern: string
-    flags: string
+  label: string;
+  pattern: string;
+  flags: string;
 }
 
 export interface RegexMatch {
-    value: string
-    index: number
-    groups?: Record<string, string>
+  value: string;
+  index: number;
+  groups?: Record<string, string>;
 }

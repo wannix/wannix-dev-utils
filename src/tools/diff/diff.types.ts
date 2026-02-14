@@ -1,9 +1,9 @@
-import type { Change } from 'diff'
+import type { Change } from "diff";
 
-export type DiffMode = 'chars' | 'words' | 'lines' | 'json'
+export type DiffMode = "chars" | "words" | "lines" | "json";
 
 export interface DiffResult {
-    changes: Change[]
-    original: string
-    modified: string
+  changes: Change[];
+  original: string;
+  modified: string;
 }
