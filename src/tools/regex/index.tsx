@@ -177,7 +177,7 @@ export default function RegexTool() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                                    className={copiedIndex === i ? "h-6 w-6 p-0 text-primary hover:text-primary" : "h-6 w-6 p-0 text-muted-foreground hover:text-foreground"}
                                                     onClick={() => handleCopyMatch(match.value, i)}
                                                 >
                                                     {copiedIndex === i ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}

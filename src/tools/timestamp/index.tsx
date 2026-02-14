@@ -71,7 +71,7 @@ export default function TimestampTool() {
                                     onChange={handleChange}
                                     className="font-mono"
                                 />
-                                <Button onClick={handleSetNow} className="px-4">
+                                <Button onClick={handleSetNow} className="px-6">
                                     <Clock className="mr-2 h-4 w-4" />
                                     Now
                                 </Button>
@@ -100,7 +100,7 @@ export default function TimestampTool() {
                     </Card>
                 )}
             </div>
-        </ToolShell>
+        </ToolShell >
     )
 }
 
@@ -123,7 +123,7 @@ function CopyButton({ text }: { text: string }) {
         <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            className={copied ? "h-8 w-8 text-primary hover:text-primary" : "h-8 w-8 text-muted-foreground hover:text-foreground"}
             onClick={() => copyToClipboard(text)}
             title="Copy"
         >

@@ -76,7 +76,7 @@ export default function JsonYamlTool() {
             <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                className={copied ? "h-8 w-8 text-primary hover:text-primary" : "h-8 w-8 text-muted-foreground hover:text-foreground"}
                 onClick={() => copyToClipboard(text)}
                 title="Copy"
             >

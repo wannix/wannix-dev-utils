@@ -116,7 +116,7 @@ export default function SvgTool() {
                                 variant="ghost"
                                 onClick={() => result && copyToClipboard(result.optimized)}
                                 disabled={!result}
-                                className={copied ? "text-primary" : "text-muted-foreground"}
+                                className={copied ? "text-primary hover:text-primary" : "text-muted-foreground"}
                             >
                                 {copied ? (
                                     <><Check className="mr-2 h-3.5 w-3.5" /> Copied</>

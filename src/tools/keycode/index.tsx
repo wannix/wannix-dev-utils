@@ -169,7 +169,7 @@ export default function KeycodeTool() {
                                     size="sm"
                                     variant="ghost"
                                     onClick={handleCopyAll}
-                                    className={copied ? "text-primary" : "text-muted-foreground"}
+                                    className={copied ? "text-primary hover:text-primary" : "text-muted-foreground"}
                                 >
                                     {copied ? <><Check className="mr-2 h-3.5 w-3.5" /> Copied</> : <><Copy className="mr-2 h-3.5 w-3.5" /> Copy All</>}
                                 </Button>
