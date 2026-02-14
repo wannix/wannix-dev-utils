@@ -48,6 +48,8 @@ const DiffTool = React.lazy(() => import('@/tools/diff'))
 
 const CronTool = React.lazy(() => import('@/tools/cron'))
 
+const SvgTool = React.lazy(() => import('@/tools/svg'))
+
 export const tools: ToolConfig[] = [
     // Conversion & Parsing
     {
@@ -174,7 +176,7 @@ export const tools: ToolConfig[] = [
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'validation',
-        component: () => <PlaceholderTool name="SVG Optimizer" />
+        component: SvgTool
     },
     {
         id: 'regex',
