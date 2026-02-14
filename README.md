@@ -77,42 +77,37 @@ src/
 
 ## 🐳 Deployment (AWS EKS)
 
-### Dockerfile
+The project includes production-ready Docker configuration files:
+- **[Dockerfile](./Dockerfile)** — Multi-stage build with Node.js 20 + nginx Alpine
+- **[nginx.conf](./nginx.conf)** — SPA routing, caching, security headers, gzip compression
 
-```dockerfile
-# Build stage
-FROM node:20-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
+### Build and Test Locally
 
-# Production stage
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+```bash
+# Build Docker image
+docker build -t dev-utilities-hub .
+
+# Run locally on port 8080
+docker run -p 8080:80 dev-utilities-hub
+
+# Visit http://localhost:8080
 ```
 
-### nginx.conf
+### Deploy to AWS EKS
 
-```nginx
-server {
-    listen 80;
-    root /usr/share/nginx/html;
-    index index.html;
+```bash
+# 1. Authenticate with ECR
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin <ECR_REGISTRY>
 
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
+# 2. Build and tag
+docker build -t <ECR_REGISTRY>/dev-utilities-hub:latest .
 
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-}
+# 3. Push to ECR
+docker push <ECR_REGISTRY>/dev-utilities-hub:latest
+
+# 4. Deploy to EKS (see Kubernetes manifest below)
+kubectl apply -f k8s-deployment.yaml
 ```
 
 ### Kubernetes Deployment
