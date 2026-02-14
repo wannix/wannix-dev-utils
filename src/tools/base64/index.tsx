@@ -92,9 +92,11 @@ export default function Base64Tool() {
                 <div className="grid gap-6 md:grid-cols-2">
                     {/* Input Section */}
                     <div className="space-y-3">
-                        <Label htmlFor="input" className="text-base font-medium">
-                            {mode === 'encode' ? 'Text Input' : 'Base64 Input'}
-                        </Label>
+                        <div className="flex items-center min-h-9">
+                            <Label htmlFor="input" className="text-base font-medium">
+                                {mode === 'encode' ? 'Text Input' : 'Base64 Input'}
+                            </Label>
+                        </div>
                         <Textarea
                             id="input"
                             placeholder={mode === 'encode' ? 'Type or paste content to encode...' : 'Paste Base64 string to decode...'}
@@ -109,7 +111,7 @@ export default function Base64Tool() {
 
                     {/* Output Section */}
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between min-h-9">
                             <Label htmlFor="output" className="text-base font-medium">
                                 {mode === 'encode' ? 'Base64 Output' : 'Text Output'}
                             </Label>
@@ -118,7 +120,7 @@ export default function Base64Tool() {
                                 variant="ghost"
                                 onClick={() => copyToClipboard(output)}
                                 disabled={!output}
-                                className={copied ? "text-primary" : "text-muted-foreground"}
+                                className={copied ? "text-primary hover:text-primary" : "text-muted-foreground"}
                             >
                                 {copied ? (
                                     <><Check className="mr-2 h-3.5 w-3.5" /> Copied</>

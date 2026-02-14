@@ -81,10 +81,10 @@ export default function SvgTool() {
                     </div>
                 )}
 
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-6 md:grid-cols-2 items-start">
                     {/* Input Section */}
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between min-h-9">
                             <Label htmlFor="svg-input" className="text-base font-medium">
                                 SVG Input
                             </Label>
@@ -107,7 +107,7 @@ export default function SvgTool() {
 
                     {/* Output Section */}
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between min-h-9">
                             <Label htmlFor="svg-output" className="text-base font-medium">
                                 Optimized SVG
                             </Label>

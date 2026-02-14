@@ -39,8 +39,7 @@ const JsonYamlTool = React.lazy(() => import('@/tools/json-yaml'))
 
 const HashTool = React.lazy(() => import('@/tools/hash'))
 
-// Placeholder for tools not yet implemented
-const PlaceholderTool = ({ name }: { name: string }) => <div className="p-8 text-center text-muted-foreground" > {name} Tool Coming Soon </div>
+
 
 const CurlTool = React.lazy(() => import('@/tools/curl'))
 
@@ -51,6 +50,8 @@ const CronTool = React.lazy(() => import('@/tools/cron'))
 const SvgTool = React.lazy(() => import('@/tools/svg'))
 
 const RegexTool = React.lazy(() => import('@/tools/regex'))
+
+const KeycodeTool = React.lazy(() => import('@/tools/keycode'))
 
 export const tools: ToolConfig[] = [
     // Conversion & Parsing
@@ -200,6 +201,6 @@ export const tools: ToolConfig[] = [
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'validation',
-        component: () => <PlaceholderTool name="Keycode Info" />
+        component: KeycodeTool
     },
 ]
