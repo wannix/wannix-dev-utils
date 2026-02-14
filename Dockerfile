@@ -6,6 +6,10 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Fix for private registry in lockfile: replace private Nexus URL with public npm registry
+# This avoids E401 errors when building outside the corporate network
+RUN sed -i 's|https://nexus.services.fsniwaikato.kiwi/repository/npm-group/|https://registry.npmjs.org/|g' package-lock.json
+
 # Install dependencies
 RUN npm ci
 
