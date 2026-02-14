@@ -50,6 +50,8 @@ const CronTool = React.lazy(() => import('@/tools/cron'))
 
 const SvgTool = React.lazy(() => import('@/tools/svg'))
 
+const RegexTool = React.lazy(() => import('@/tools/regex'))
+
 export const tools: ToolConfig[] = [
     // Conversion & Parsing
     {
@@ -187,7 +189,7 @@ export const tools: ToolConfig[] = [
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'validation',
-        component: () => <PlaceholderTool name="Regex Tester" />
+        component: RegexTool
     },
     {
         id: 'keycode',
