@@ -35,14 +35,14 @@ export function Sidebar(): JSX.Element {
                                             key={tool.id}
                                             to={tool.href}
                                             className={cn(
-                                                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all',
+                                                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all whitespace-nowrap',
                                                 isActive
                                                     ? 'bg-primary/10 text-primary font-semibold'
                                                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                             )}
                                         >
-                                            <Icon className={cn('h-4 w-4', isActive ? 'text-primary' : 'text-muted-foreground')} />
-                                            {tool.title}
+                                            <Icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
+                                            <span className="truncate flex-1 min-w-0">{tool.title}</span>
                                         </Link>
                                     )
                                 })}
