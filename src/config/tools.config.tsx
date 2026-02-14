@@ -8,7 +8,7 @@ import {
     Hash,
     Terminal,
     GitCompare,
-    Timer,
+    CalendarClock,
     Image,
     Braces,
     Keyboard,
@@ -43,6 +43,10 @@ const HashTool = React.lazy(() => import('@/tools/hash'))
 const PlaceholderTool = ({ name }: { name: string }) => <div className="p-8 text-center text-muted-foreground" > {name} Tool Coming Soon </div>
 
 const CurlTool = React.lazy(() => import('@/tools/curl'))
+
+const DiffTool = React.lazy(() => import('@/tools/diff'))
+
+const CronTool = React.lazy(() => import('@/tools/cron'))
 
 export const tools: ToolConfig[] = [
     // Conversion & Parsing
@@ -148,18 +152,18 @@ export const tools: ToolConfig[] = [
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'validation',
-        component: () => <PlaceholderTool name="Diff Checker" />
+        component: DiffTool
     },
     {
         id: 'cron',
         title: 'Cron Tester',
-        description: 'Test and debug cron expressions.',
-        icon: Timer,
+        description: 'Validate and explain cron expressions with next run previews.',
+        icon: CalendarClock,
         href: '/tools/cron',
         iconColor: 'text-primary',
         bgColor: 'bg-primary/10',
         category: 'validation',
-        component: () => <PlaceholderTool name="Cron Tester" />
+        component: CronTool
     },
     {
         id: 'svg',
