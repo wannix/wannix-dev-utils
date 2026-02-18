@@ -2,23 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
 @layer base {
   :root {
-    /* Light mode - Clean and minimal */
+    /* Light Theme (New) */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    /* Vibrant brand green - DevUtils Logo Color */
-    --primary: 130 56% 41%;
-    --primary-foreground: 0 0% 100%;
-
-    /* Accent - Blue */
-    --accent-blue: 217 91% 60%;
-
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
@@ -29,37 +27,65 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 130 56% 41%;
-    --radius: 0.75rem;
+    --ring: 142 76% 36%;
+    --radius: 0.5rem;
+    
+    /* Sidebar Light */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217 91% 60%;
+    
+    /* Code Light */
+    --code-bg: 210 40% 96.1%;
+    --code-border: 214.3 31.8% 91.4%;
+    
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
   }
-
+ 
   .dark {
-    /* Dark mode - Deep navy with vibrant accents */
-    --background: 222 47% 11%;
+    /* Dark Theme (Existing values moved here) */
+    --background: 217 19% 13%;
     --foreground: 210 40% 98%;
-    --card: 217 33% 17%;
+    --card: 217 19% 18%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    --popover: 217 19% 18%;
     --popover-foreground: 210 40% 98%;
-
-    /* Vibrant brand green - DevUtils Logo Color */
-    --primary: 130 56% 41%;
-    --primary-foreground: 222 47% 11%;
-
-    /* Accent - Blue */
-    --accent-blue: 217 91% 60%;
-
-    --secondary: 217 33% 17%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 19% 23%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --muted: 217 19% 23%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 50%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 23%;
-    --input: 217 33% 23%;
-    --ring: 130 56% 41%;
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 142 76% 36%;
+    
+    /* Sidebar Dark */
+    --sidebar-background: 217 19% 10%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 142 76% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 19% 15%;
+    --sidebar-accent-foreground: 142 76% 36%;
+    --sidebar-border: 217 19% 20%;
+    --sidebar-ring: 142 76% 36%;
+    
+    /* Code Dark */
+    --code-bg: 217 19% 15%;
+    --code-border: 217 19% 27%;
+    
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
   }
 }
 
@@ -70,35 +96,5 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family:
-      "Inter",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      sans-serif;
-  }
-}
-
-/* Gradient text utilities */
-@layer utilities {
-  .gradient-text {
-    background: linear-gradient(
-      135deg,
-      hsl(130 56% 41%) 0%,
-      hsl(189 94% 43%) 100%
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .gradient-border {
-    position: relative;
-    background: linear-gradient(
-      135deg,
-      hsl(130 56% 41%) 0%,
-      hsl(189 94% 43%) 100%
-    );
-    border-radius: var(--radius);
   }
 }

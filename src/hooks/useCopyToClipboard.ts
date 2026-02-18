@@ -1,23 +1,27 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
-interface CopyToClipboardResult {
-  copied: boolean;
-  copyToClipboard: (text: string) => Promise<void>;
-}
+export function useCopyToClipboard() {
+  const [copied, setCopied] = useState(false);
 
-export function useCopyToClipboard(): CopyToClipboardResult {
-  const [copied, setCopied] = useState<boolean>(false);
-
-  const copyToClipboard = useCallback(async (text: string): Promise<void> => {
+  const copyToClipboard = async (text: string, successMessage = "Copied to clipboard") => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
+      toast({
+        title: "Success",
+        description: successMessage,
+      });
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error("Failed to copy to clipboard:", error);
-      setCopied(false);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+      toast({
+        title: "Error",
+        description: "Failed to copy to clipboard",
+        variant: "destructive",
+      });
     }
-  }, []);
+  };
 
   return { copied, copyToClipboard };
 }

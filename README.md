@@ -1,158 +1,182 @@
-# Developer Utilities Hub
+# DevUtils - Developer Utilities Hub
 
-A collection of browser-based developer tools built with React, TypeScript, and Tailwind CSS. All processing happens **locally in your browser** — no data is ever sent to a server.
+A collection of essential developer tools built with React, TypeScript, and Tailwind CSS.
 
-## ✨ Tools
+## Features
 
-| Tool | Description | Category |
-|---|---|---|
-| **Base64 Encoder/Decoder** | Encode/decode Base64 with UTF-8 support | Conversion |
-| **JWT Decoder** | Inspect JWT header, payload, and signature | Conversion |
-| **Timestamp Converter** | Convert Unix timestamps ↔ human-readable dates | Conversion |
-| **Spring YAML Converter** | Convert between `.properties` and YAML formats | Conversion |
-| **JSON ↔ YAML** | Bi-directional JSON/YAML converter | Conversion |
-| **UUID/ULID/KSUID Generator** | Generate unique identifiers with formatting options | Generation |
-| **Hash Generator** | MD5, SHA-1/256/512, RIPEMD-160, HMAC hashing | Generation |
-| **cURL Builder** | Construct cURL commands with headers and body | Generation |
-| **Regex Tester** | Test regex patterns with live matching and presets | Validation |
-| **Diff Checker** | Compare text with char/word/line/JSON diff modes | Validation |
-| **Cron Expression Tester** | Validate cron expressions with Quartz support | Validation |
-| **SVG Optimizer** | Optimize SVG files with SVGO (multi-pass) | Conversion |
-| **Keycode Info** | Inspect keyboard, mouse, wheel, and touch events | Validation |
+- **Base64 Encoder/Decoder** - Encode and decode Base64 strings
+- **JWT Decoder** - Decode and inspect JWT tokens
+- **UUID Generator** - Generate UUIDs, ULIDs, and KSUIDs
+- **Spring ↔ YAML Converter** - Convert between application.properties and YAML
+- **JSON ↔ YAML Converter** - Convert between JSON and YAML formats
+- **Certificate Decoder** - Decode X.509 PEM certificates and CSRs
+- **Unix Timestamp Converter** - Convert between timestamps and dates
+- **ID Generator Suite** - Generate various ID formats
+- **Hash Generator** - Generate MD5, SHA-256, SHA-512 hashes and HMAC
+- **Curl Builder** - Build curl commands with a visual interface
+- **Diff Checker** - Compare two texts and highlight differences
+- **Cron Tester** - Validate cron expressions and preview runs
+- **SVG Optimizer** - Optimize SVG files
+- **Regex Tester** - Test regular expressions with real-time matching
+- **Keycode Info** - Get JavaScript keycode event properties
 
-## 🛠 Tech Stack
+## Prerequisites
 
-- **Framework**: React 18 + TypeScript 5
-- **Build Tool**: Vite 5
-- **Styling**: Tailwind CSS 3 + Radix UI primitives
-- **State**: Zustand, React hooks
-- **PWA**: vite-plugin-pwa (offline support via Service Worker)
-- **Routing**: React Router v6
+Before running this project locally, ensure you have the following installed:
 
-## 🚀 Quick Start
+- **Node.js** (v18.0.0 or higher) - [Download](https://nodejs.org/) or [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **npm** (v9.0.0 or higher) - Comes bundled with Node.js
+- **Git** - [Download](https://git-scm.com/downloads)
 
-```bash
-# Install dependencies
+### Verify Installation
+
+```sh
+node --version  # Should output v18.x.x or higher
+npm --version   # Should output 9.x.x or higher
+git --version   # Should output git version 2.x.x
+```
+
+## Local Development Setup
+
+### 1. Clone the Repository
+
+```sh
+git clone <YOUR_GIT_URL>
+cd <YOUR_PROJECT_NAME>
+```
+
+### 2. Install Dependencies
+
+```sh
 npm install
+```
 
-# Start dev server (http://localhost:5173)
+### 3. Start Development Server
+
+```sh
 npm run dev
+```
 
-# Production build
+The app will be available at `http://localhost:8080`
+
+### 4. Build for Production
+
+```sh
 npm run build
+```
 
-# Preview production build
+### 5. Preview Production Build
+
+```sh
 npm run preview
 ```
 
-## 📁 Project Structure
+## Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server with hot reload |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint to check code quality |
+| `npm run test` | Run tests with Vitest |
+
+## Tech Stack
+
+- **React 18** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Fast build tool and dev server
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - Reusable component library
+- **React Router** - Client-side routing
+- **Vitest** - Unit testing framework
+
+## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── layout/          # ToolShell, Navbar, ErrorBoundary, ToolSkeleton
-│   └── ui/              # Button, Input, Card, Tabs, etc. (shadcn/ui)
-├── config/
-│   └── tools.config.tsx # Tool registry (routes, icons, lazy imports)
-├── hooks/               # useCopyToClipboard, etc.
-├── lib/                 # cn() utility
-├── tools/               # Each tool in its own folder
-│   └── <tool>/
-│       ├── index.tsx           # Tool UI component
-│       ├── <tool>.types.ts     # TypeScript interfaces
-│       └── <tool>.utils.ts     # Pure logic (JSDoc-documented)
-└── routes.tsx           # Route definitions + homepage
+│   ├── common/         # Shared components (CopyButton, ToolCard, etc.)
+│   ├── layout/         # Layout components (Sidebar, Layout)
+│   ├── ui/             # shadcn/ui components
+│   └── utilities/      # Tool-specific components
+├── hooks/              # Custom React hooks
+├── lib/
+│   ├── converters/     # Utility conversion functions
+│   └── validators/     # Validation schemas
+├── pages/              # Route page components
+└── test/               # Test setup and utilities
 ```
 
-## 📜 Available Scripts
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Start Vite dev server with HMR |
-| `npm run build` | Type-check + production build |
-| `npm run preview` | Preview the production build |
-| `npm run type-check` | TypeScript compiler check (`tsc --noEmit`) |
-| `npm run lint` | ESLint with zero-warning policy |
-| `npm run format` | Format source files with Prettier |
+## Docker & Deployment
 
-## 🐳 Deployment (AWS EKS)
+This project includes a production-ready `Dockerfile` optimized for performance and security using a multi-stage build process (Node.js builder → Node.js runner). It uses a custom Express server (`server.js`) to serve static assets with gzip compression, security headers, and SPA routing support.
 
-The project includes production-ready Docker configuration files:
-- **[Dockerfile](./Dockerfile)** — Multi-stage build with Node.js 20 + nginx Alpine
-- **[nginx.conf](./nginx.conf)** — SPA routing, caching, security headers, gzip compression
+### Build Docker Image
 
-### Build and Test Locally
-
-```bash
-# Build Docker image
-docker build -t dev-utilities-hub .
-
-# Run locally on port 8080
-docker run -p 8080:80 dev-utilities-hub
-
-# Visit http://localhost:8080
+```sh
+docker build -t devutils-hub .
 ```
 
-### Deploy to AWS EKS
+### Run Docker Container
 
-```bash
-# 1. Authenticate with ECR
-aws ecr get-login-password --region us-east-1 | \
-  docker login --username AWS --password-stdin <ECR_REGISTRY>
-
-# 2. Build and tag
-docker build -t <ECR_REGISTRY>/dev-utilities-hub:latest .
-
-# 3. Push to ECR
-docker push <ECR_REGISTRY>/dev-utilities-hub:latest
-
-# 4. Deploy to EKS (see Kubernetes manifest below)
-kubectl apply -f k8s-deployment.yaml
+```sh
+docker run -p 8080:80 devutils-hub
 ```
+
+The app will be available at `http://localhost:8080`.
 
 ### Kubernetes Deployment
+
+The application serves the app via a Node.js server on port 80 and includes a health check endpoint at `/health`.
+
+A basic Kubernetes deployment configuration:
 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dev-utilities-hub
+  name: devutils-hub
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: dev-utilities-hub
+      app: devutils-hub
   template:
     metadata:
       labels:
-        app: dev-utilities-hub
+        app: devutils-hub
     spec:
       containers:
-        - name: dev-utilities-hub
-          image: <ECR_REGISTRY>/dev-utilities-hub:latest
+        - name: devutils-hub
+          image: devutils-hub:latest
           ports:
             - containerPort: 80
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 200m
-              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: dev-utilities-hub
+  name: devutils-hub
 spec:
-  type: ClusterIP
+  selector:
+    app: devutils-hub
   ports:
     - port: 80
       targetPort: 80
-  selector:
-    app: dev-utilities-hub
+  type: ClusterIP
 ```
 
-## 📝 License
+## License
 
-Private — internal use only.
+MIT

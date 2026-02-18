@@ -1,35 +1,45 @@
-# Build stage
-FROM node:20-alpine AS build
+# Stage 1: Build the application
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files for dependency installation
+COPY package.json package-lock.json ./
 
-# Fix for private registry in lockfile: replace private Nexus URL with public npm registry
-# This avoids E401 errors when building outside the corporate network
-RUN sed -i 's|https://nexus.services.fsniwaikato.kiwi/repository/npm-group/|https://registry.npmjs.org/|g' package-lock.json
-
-# Install dependencies
+# Install all dependencies (including devDependencies for build)
 RUN npm ci
 
-# Copy source code
+# Copy the rest of the application code
 COPY . .
 
-# Build the application
+# Build the application for production
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Stage 2: Serve the application with Node.js
+FROM node:20-alpine AS runner
 
-# Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+ENV NODE_ENV=production
+
+# Copy package files to install only production dependencies
+COPY package.json package-lock.json ./
+
+# Install only production dependencies
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy built assets from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Copy the production server script
+COPY server.js .
+
+# Add a non-root user for security
+# Alpine comes with a 'node' user in base image
+USER node
 
 # Expose port 80
 EXPOSE 80
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start the server
+CMD ["node", "server.js"]
