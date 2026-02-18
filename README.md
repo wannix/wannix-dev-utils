@@ -2,6 +2,8 @@
 
 A collection of browser-based developer tools built with React, TypeScript, and Tailwind CSS. All processing happens **locally in your browser** — no data is ever sent to a server.
 
+![Developer Utilities Hub Screenshot](./public/home.png)
+
 ## ✨ Tools
 
 | Tool | Description | Category |

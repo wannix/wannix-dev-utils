@@ -17,7 +17,7 @@ export function Layout({ children }: LayoutProps): JSX.Element {
       </div>
       <footer className="pl-64 border-t border-border/40 py-5">
         <p className="text-center text-sm text-muted-foreground/60">
-          Made with ❤️ just for Foodies
+          Made with ❤️ just for Devs!
         </p>
       </footer>
     </div>
