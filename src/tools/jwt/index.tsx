@@ -244,7 +244,8 @@ const DataDisplay = ({
 };
 
 export default function JwtTool() {
-  const [token, setToken] = useState("");
+  const SAMPLE_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30";
+  const [token, setToken] = useState(SAMPLE_JWT);
   const [decoded, setDecoded] = useState<DecodedJWT | null>(null);
 
   useEffect(() => {
@@ -303,13 +304,40 @@ export default function JwtTool() {
           <div className="flex-1 relative p-4 flex flex-col gap-4 overflow-y-auto">
             {decoded?.header && <TokenStatusBanner payload={decoded.payload} />}
 
-            <Textarea
-              id="jwt-input"
-              placeholder="Paste your JWT here..."
-              className={`flex-1 font-mono resize-none bg-muted/30 focus-visible:ring-primary break-all p-4 text-xs leading-relaxed border-0 shadow-none focus-visible:ring-0 ${decoded?.error ? "text-destructive" : ""}`}
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-            />
+            <div className="flex-1 relative min-h-0">
+              {/* Color-highlighted JWT display (visible layer) */}
+              <div
+                className="absolute inset-0 font-mono break-all p-4 text-xs leading-relaxed overflow-auto pointer-events-none whitespace-pre-wrap"
+                aria-hidden="true"
+              >
+                {token ? (() => {
+                  const parts = token.split(".");
+                  if (parts.length === 3) {
+                    return (
+                      <>
+                        <span className="text-red-400 font-semibold">{parts[0]}</span>
+                        <span className="text-muted-foreground/60">.</span>
+                        <span className="text-purple-400 font-semibold">{parts[1]}</span>
+                        <span className="text-muted-foreground/60">.</span>
+                        <span className="text-cyan-400 font-semibold">{parts[2]}</span>
+                      </>
+                    );
+                  }
+                  return <span className={decoded?.error ? "text-destructive" : "text-foreground/80"}>{token}</span>;
+                })() : (
+                  <span className="text-muted-foreground/50">Paste your JWT here...</span>
+                )}
+              </div>
+              {/* Actual textarea (transparent text, handles input) */}
+              <Textarea
+                id="jwt-input"
+                placeholder=""
+                className="flex-1 w-full h-full font-mono resize-none bg-transparent focus-visible:ring-primary break-all p-4 text-xs leading-relaxed border-0 shadow-none focus-visible:ring-0 text-transparent caret-foreground selection:bg-primary/20 whitespace-pre-wrap absolute inset-0"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                spellCheck={false}
+              />
+            </div>
             {decoded?.error && token && (
               <Alert
                 variant="destructive"
