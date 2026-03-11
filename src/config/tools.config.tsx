@@ -12,6 +12,7 @@ import {
   Image,
   Braces,
   Keyboard,
+  BracketsIcon,
   type LucideIcon,
 } from "lucide-react";
 import React from "react";
@@ -53,7 +54,25 @@ const RegexTool = React.lazy(() => import("@/tools/regex"));
 
 const KeycodeTool = React.lazy(() => import("@/tools/keycode"));
 
+const JsonFormatterTool = React.lazy(
+  () => import("@/tools/json-formatter"),
+);
+
 export const tools: ToolConfig[] = [
+  // Formatting & Conversion
+  {
+    id: "json-formatter",
+    title: "JSON Formatter",
+    description:
+      "Format, validate, search, and navigate JSON with tree view, JSONPath, and auto-fix.",
+    icon: BracketsIcon,
+    href: "/tools/json-formatter",
+    iconColor: "text-primary",
+    bgColor: "bg-primary/10",
+    category: "conversion",
+    component: JsonFormatterTool,
+  },
+
   // Conversion & Parsing
   {
     id: "base64",
