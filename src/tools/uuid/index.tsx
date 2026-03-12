@@ -123,11 +123,11 @@ export default function UuidTool() {
       title="ID Generator Suite"
       description="Generate UUID, ULID, and KSUID identifiers"
     >
-      <div className="grid lg:grid-cols-3 gap-8 h-[calc(95vh-14rem)] min-h-[600px]">
+      <div className="grid lg:grid-cols-3 gap-8 h-[calc(100vh-16rem)] min-h-[400px]">
         {/* Left Column: Configuration & History */}
-        <div className="lg:col-span-1 flex flex-col gap-6 h-full overflow-hidden">
-          <Card className="border-border/50 bg-card shadow-sm">
-            <CardHeader className="pb-4 border-b border-border/40 bg-muted/10">
+        <div className="lg:col-span-1 flex flex-col gap-4 h-full overflow-hidden">
+          <Card className="border-border/50 bg-card shadow-sm shrink-0">
+            <CardHeader className="pb-3 border-b border-border/40 bg-muted/10">
               <div className="flex items-center gap-2">
                 <Settings2 className="h-4 w-4 text-primary" />
                 <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -135,10 +135,10 @@ export default function UuidTool() {
                 </CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+            <CardContent className="space-y-4 pt-4">
               {/* ID Type & Quantity */}
-              <div className="space-y-4">
-                <div className="space-y-2">
+              <div className="space-y-3">
+                <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-muted-foreground">
                     ID Type
                   </Label>
@@ -165,7 +165,7 @@ export default function UuidTool() {
                   </p>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5 mt-2">
                   <Label className="text-xs font-medium text-muted-foreground">
                     Quantity (1-100)
                   </Label>
@@ -175,13 +175,13 @@ export default function UuidTool() {
                     max={100}
                     value={quantity}
                     onChange={handleQuantityChange}
-                    className="bg-background/50"
+                    className="bg-background/50 h-9"
                   />
                 </div>
               </div>
 
               {/* Toggles */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div
                   className={`flex items-center justify-between transition-opacity ${!isUuid ? "opacity-50 pointer-events-none" : ""}`}
                 >
@@ -229,7 +229,7 @@ export default function UuidTool() {
                 </div>
               </div>
 
-              <Button className="w-full" onClick={handleGenerateClick}>
+              <Button className="w-full h-9 mt-1" onClick={handleGenerateClick}>
                 <RefreshCw className="mr-2 h-4 w-4" /> Generate{" "}
                 {idType === "uuid-v4" ? "UUIDs" : idType.toUpperCase() + "s"}
               </Button>
@@ -237,7 +237,7 @@ export default function UuidTool() {
           </Card>
 
           {/* History Section - Scrollable */}
-          <Card className="border-border/50 bg-card shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+          <Card className="border-border/50 bg-card shadow-sm flex-1 min-h-[10rem] shrink-0 flex flex-col overflow-hidden">
             <CardHeader className="py-2 px-4 border-b border-border/40 bg-muted/20 flex flex-row items-center justify-between shrink-0 h-10">
               <div className="flex items-center gap-2">
                 <History className="h-3.5 w-3.5 text-muted-foreground" />
@@ -257,7 +257,7 @@ export default function UuidTool() {
                 </Button>
               )}
             </CardHeader>
-            <CardContent className="p-0 overflow-y-auto flex-1">
+            <CardContent className="p-0 overflow-y-auto flex-1 scrollbar-thin">
               {history.length === 0 ? (
                 <div className="p-8 text-center text-xs text-muted-foreground">
                   No history yet
@@ -337,7 +337,7 @@ export default function UuidTool() {
               value="list"
               className="flex-1 min-h-0 mt-0 overflow-hidden rounded-md border border-border/50 bg-card/50"
             >
-              <div className="h-full overflow-y-auto p-2">
+              <div className="h-full overflow-y-auto p-2 scrollbar-thin">
                 <div className="space-y-1">
                   {uuidList.map((uuid, idx) => (
                     <div

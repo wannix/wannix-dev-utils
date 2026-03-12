@@ -13,7 +13,7 @@ export function Sidebar(): JSX.Element {
   ];
 
   return (
-    <aside className="fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-64 border-r border-border/40 bg-background/95 backdrop-blur-sm overflow-y-auto">
+    <aside className="fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-64 border-r border-border/40 bg-background/95 backdrop-blur-sm overflow-y-auto scrollbar-thin">
       <div className="flex h-full flex-col gap-6 p-4">
         {/* Categories */}
         {categories.map((category) => {

@@ -46,7 +46,7 @@ export default function DiffTool() {
       title="Diff Checker"
       description="Compare and highlight differences between two texts."
     >
-      <div className="flex flex-col h-[calc(95vh-14rem)] min-h-[600px] gap-6">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-6">
         {/* Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-muted/20 p-2 rounded-lg border border-border/40">
           <Tabs
@@ -128,7 +128,7 @@ export default function DiffTool() {
                 </CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="p-0 flex-1 bg-muted/5 overflow-auto relative">
+            <CardContent className="p-0 flex-1 bg-muted/5 overflow-auto relative scrollbar-thin">
               {diffResult.length > 0 ? (
                 <div className="p-4 font-mono text-sm whitespace-pre-wrap break-all leading-relaxed">
                   {diffResult.map((part, index) => {

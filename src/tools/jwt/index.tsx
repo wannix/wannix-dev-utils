@@ -158,11 +158,11 @@ const DataDisplay = ({
       </CardHeader>
       <CardContent className="p-0 flex-1 min-h-0 overflow-hidden relative group bg-card/30">
         {view === "json" ? (
-          <pre className="p-4 text-xs md:text-sm font-mono text-foreground/80 h-full w-full overflow-auto">
+          <pre className="p-4 text-xs md:text-sm font-mono text-foreground/80 h-full w-full overflow-auto scrollbar-thin">
             {jsonString}
           </pre>
         ) : (
-          <div className="h-full w-full overflow-auto">
+          <div className="h-full w-full overflow-auto scrollbar-thin">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-border/40">
@@ -271,9 +271,9 @@ export default function JwtTool() {
       title="JWT Decoder"
       description="Decode JSON Web Tokens to inspect header, payload, and signature."
       headerActions={null} // Removed header actions to clean up top bar
-      className="max-w-[68rem]"
+
     >
-      <div className="flex flex-col lg:flex-row gap-6 h-[calc(95vh-14rem)] min-h-[500px]">
+      <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-16rem)] min-h-[500px]">
         {/* Left Column: Input */}
         <div className="flex flex-col gap-0 lg:w-[38%] h-full bg-card border border-border/40 rounded-lg overflow-hidden flex-shrink-0">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-muted/10">
@@ -301,7 +301,7 @@ export default function JwtTool() {
             </div>
           </div>
 
-          <div className="flex-1 relative p-4 flex flex-col gap-4 overflow-y-auto">
+          <div className="flex-1 relative p-4 flex flex-col gap-4 overflow-y-auto scrollbar-thin">
             {decoded?.header && <TokenStatusBanner payload={decoded.payload} />}
 
             <div className="flex-1 relative min-h-0">
@@ -353,7 +353,7 @@ export default function JwtTool() {
         </div>
 
         {/* Right Column: Output */}
-        <div className="flex flex-col gap-4 lg:flex-1 h-full min-h-0 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-4 lg:flex-1 h-full min-h-0 overflow-y-auto pr-1 scrollbar-thin">
           {decoded && !decoded.error && token ? (
             <>
               {/* Header (Part 1) */}

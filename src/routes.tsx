@@ -28,7 +28,7 @@ function HomePage() {
   }, [search]);
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-12 py-10">
+    <div className="flex flex-col items-center justify-center space-y-12 py-10 max-w-[1400px] mx-auto w-full">
       {/* Hero Section */}
       <div className="text-center space-y-6 max-w-3xl">
         <h1 className="text-5xl font-extrabold tracking-tight">

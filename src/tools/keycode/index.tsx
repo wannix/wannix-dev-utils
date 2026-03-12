@@ -150,29 +150,29 @@ export default function KeycodeTool() {
         </Button>
       }
     >
-      <div className="space-y-6">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-4">
         {/* Interaction Zone */}
         <div
           ref={interactionRef}
-          className="flex flex-col items-center justify-center py-12 rounded-lg border border-dashed border-border/60 bg-muted/20 transition-all cursor-pointer select-none"
+          className="flex flex-col items-center justify-center py-8 rounded-lg border border-dashed border-border/60 bg-muted/20 transition-all cursor-pointer select-none shrink-0"
           tabIndex={0}
         >
           {eventType ? (
             <>
               <Badge
                 variant="outline"
-                className={`mb-3 ${TYPE_COLORS[eventType]}`}
+                className={`mb-2 ${TYPE_COLORS[eventType]}`}
               >
                 {TYPE_LABELS[eventType]}
               </Badge>
-              <div className="text-6xl font-bold text-primary mb-3 animate-in zoom-in duration-200">
+              <div className="text-5xl font-bold text-primary mb-2 animate-in zoom-in duration-200">
                 {label}
               </div>
             </>
           ) : (
             <div className="text-center">
-              <div className="text-4xl mb-3 opacity-40">⌨️ 🖱</div>
-              <div className="text-lg text-muted-foreground">
+              <div className="text-3xl mb-2 opacity-40">⌨️ 🖱</div>
+              <div className="text-base text-muted-foreground">
                 Press any key, click, scroll, or touch here...
               </div>
               <div className="text-xs text-muted-foreground mt-1">
@@ -183,10 +183,10 @@ export default function KeycodeTool() {
         </div>
 
         {properties.length > 0 && (
-          <div className="grid gap-6 md:grid-cols-2 items-start animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="grid gap-6 md:grid-cols-2 flex-1 min-h-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Properties Table */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between min-h-9">
+            <div className="flex flex-col min-h-0">
+              <div className="flex items-center justify-between min-h-9 shrink-0">
                 <span className="text-base font-medium">Event Properties</span>
                 <Button
                   size="sm"
@@ -209,9 +209,9 @@ export default function KeycodeTool() {
                   )}
                 </Button>
               </div>
-              <div className="rounded-md border bg-muted/30 overflow-hidden">
+              <div className="rounded-md border bg-muted/30 overflow-auto flex-1 min-h-0 scrollbar-thin">
                 <table className="w-full text-sm">
-                  <thead>
+                  <thead className="sticky top-0 z-10">
                     <tr className="border-b bg-muted/50">
                       <th className="text-left py-2 px-4 font-medium text-muted-foreground">
                         Property
@@ -251,11 +251,11 @@ export default function KeycodeTool() {
             </div>
 
             {/* Event History */}
-            <div className="space-y-3">
-              <div className="flex items-center min-h-9">
+            <div className="flex flex-col min-h-0">
+              <div className="flex items-center min-h-9 shrink-0">
                 <span className="text-base font-medium">Recent Events</span>
               </div>
-              <div className="rounded-md border bg-muted/30 overflow-hidden">
+              <div className="rounded-md border bg-muted/30 overflow-auto flex-1 min-h-0 scrollbar-thin">
                 {history.length > 0 ? (
                   <ul className="divide-y divide-border/30">
                     {history.map((h, i) => (

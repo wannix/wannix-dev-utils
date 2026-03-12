@@ -26,9 +26,9 @@ export function ToolShell({
   headerActions,
 }: ToolShellProps): JSX.Element {
   return (
-    <div className={cn("mx-auto max-w-5xl space-y-6", className)}>
+    <div className={cn("mx-auto max-w-[1400px] w-full space-y-4", className)}>
       <Card className="border-border/50 bg-card shadow-xl">
-        <CardHeader className="border-b border-border/50 pb-6">
+        <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {Icon && (
@@ -37,10 +37,10 @@ export function ToolShell({
                 </div>
               )}
               <div>
-                <CardTitle className="text-2xl font-bold tracking-tight text-card-foreground">
+                <CardTitle className="text-xl font-bold tracking-tight text-card-foreground">
                   {title}
                 </CardTitle>
-                <CardDescription className="text-muted-foreground mt-1 text-base">
+                <CardDescription className="text-muted-foreground mt-0.5 text-sm">
                   {description}
                 </CardDescription>
               </div>
@@ -48,7 +48,7 @@ export function ToolShell({
             {headerActions && <div>{headerActions}</div>}
           </div>
         </CardHeader>
-        <CardContent className="p-6">{children}</CardContent>
+        <CardContent className="p-4 pt-5">{children}</CardContent>
       </Card>
     </div>
   );

@@ -70,10 +70,10 @@ export default function SvgTool() {
         </Button>
       }
     >
-      <div className="space-y-6">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-4">
         {/* Stats bar */}
         {result && (
-          <div className="flex items-center justify-center gap-6 text-sm animate-in fade-in duration-300">
+          <div className="flex items-center justify-center gap-6 text-sm animate-in fade-in duration-300 shrink-0">
             <span className="text-muted-foreground">
               Original:{" "}
               <span className="font-mono font-medium text-foreground">
@@ -96,10 +96,10 @@ export default function SvgTool() {
           </div>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2 items-start">
+        <div className="grid gap-6 md:grid-cols-2 flex-1 min-h-0">
           {/* Input Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between min-h-9">
+          <div className="flex flex-col min-h-0">
+            <div className="flex items-center justify-between min-h-9 shrink-0">
               <Label htmlFor="svg-input" className="text-base font-medium">
                 SVG Input
               </Label>
@@ -111,18 +111,18 @@ export default function SvgTool() {
             <Textarea
               id="svg-input"
               placeholder="Paste your SVG markup here..."
-              className="min-h-[calc(95vh-340px)] font-mono resize-none bg-muted/30 focus-visible:ring-primary"
+              className="flex-1 font-mono resize-none bg-muted/30 focus-visible:ring-primary"
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
-            <div className="text-xs text-muted-foreground text-right">
+            <div className="text-xs text-muted-foreground text-right shrink-0">
               {input.length} chars
             </div>
           </div>
 
           {/* Output Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between min-h-9">
+          <div className="flex flex-col min-h-0">
+            <div className="flex items-center justify-between min-h-9 shrink-0">
               <Label htmlFor="svg-output" className="text-base font-medium">
                 Optimized SVG
               </Label>
@@ -149,11 +149,11 @@ export default function SvgTool() {
               </Button>
             </div>
 
-            <div className="relative">
+            <div className="relative flex-1 min-h-0">
               <Textarea
                 id="svg-output"
                 readOnly
-                className={`min-h-[calc(95vh-340px)] font-mono resize-none bg-muted/50 ${error ? "border-destructive/50 focus-visible:ring-destructive" : "focus-visible:ring-primary"}`}
+                className={`h-full font-mono resize-none bg-muted/50 ${error ? "border-destructive/50 focus-visible:ring-destructive" : "focus-visible:ring-primary"}`}
                 value={result?.optimized ?? ""}
               />
               {error && (

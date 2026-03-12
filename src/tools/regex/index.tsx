@@ -93,9 +93,9 @@ export default function RegexTool() {
         </Button>
       }
     >
-      <div className="space-y-6">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-4">
         {/* Pattern Input + Flags */}
-        <div className="space-y-3">
+        <div className="space-y-3 shrink-0">
           <Label htmlFor="regex-pattern" className="text-base font-medium">
             Pattern
           </Label>
@@ -157,33 +157,35 @@ export default function RegexTool() {
 
         {/* Error */}
         {error && (
-          <Alert variant="destructive" className="py-2">
+          <Alert variant="destructive" className="py-2 shrink-0">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 flex-1 min-h-0">
           {/* Test String */}
-          <div className="space-y-3">
-            <Label htmlFor="test-string" className="text-base font-medium">
-              Test String
-            </Label>
+          <div className="flex flex-col min-h-0">
+            <div className="flex items-center justify-between shrink-0 mb-2">
+              <Label htmlFor="test-string" className="text-base font-medium">
+                Test String
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                {testString.length} chars
+              </span>
+            </div>
             <Textarea
               id="test-string"
               placeholder="Enter text to test against..."
-              className="min-h-[calc(95vh-480px)] font-mono resize-none bg-muted/30 focus-visible:ring-primary"
+              className="flex-1 font-mono resize-none bg-muted/30 focus-visible:ring-primary"
               value={testString}
               onChange={(e) => setTestString(e.target.value)}
             />
-            <div className="text-xs text-muted-foreground text-right">
-              {testString.length} chars
-            </div>
           </div>
 
           {/* Matches */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="flex flex-col min-h-0">
+            <div className="flex items-center justify-between shrink-0 mb-2">
               <Label className="text-base font-medium">
                 Matches{" "}
                 <span className="text-muted-foreground font-normal">
@@ -192,7 +194,7 @@ export default function RegexTool() {
               </Label>
             </div>
             <div
-              className={`min-h-[calc(95vh-480px)] rounded-md border bg-muted/50 overflow-auto`}
+              className="flex-1 rounded-md border bg-muted/50 overflow-auto scrollbar-thin"
             >
               {matches.length > 0 ? (
                 <ul className="divide-y divide-border/40">

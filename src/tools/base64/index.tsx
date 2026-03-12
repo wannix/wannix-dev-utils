@@ -84,9 +84,9 @@ export default function Base64Tool() {
         </Button>
       }
     >
-      <div className="space-y-6">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-4">
         {/* Mode Selection */}
-        <div className="flex justify-center">
+        <div className="flex justify-center shrink-0">
           <Tabs
             value={mode}
             onValueChange={handleModeChange}
@@ -109,13 +109,16 @@ export default function Base64Tool() {
           </Tabs>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 flex-1 min-h-0">
           {/* Input Section */}
-          <div className="space-y-3">
-            <div className="flex items-center min-h-9">
+          <div className="flex flex-col min-h-0">
+            <div className="flex items-center min-h-9 shrink-0">
               <Label htmlFor="input" className="text-base font-medium">
                 {mode === "encode" ? "Text Input" : "Base64 Input"}
               </Label>
+              <span className="ml-auto text-xs text-muted-foreground">
+                {input.length} chars
+              </span>
             </div>
             <Textarea
               id="input"
@@ -124,18 +127,15 @@ export default function Base64Tool() {
                   ? "Type or paste content to encode..."
                   : "Paste Base64 string to decode..."
               }
-              className="min-h-[300px] font-mono resize-none bg-muted/30 focus-visible:ring-primary"
+              className="flex-1 font-mono resize-none bg-muted/30 focus-visible:ring-primary"
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
-            <div className="text-xs text-muted-foreground text-right">
-              {input.length} chars
-            </div>
           </div>
 
           {/* Output Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between min-h-9">
+          <div className="flex flex-col min-h-0">
+            <div className="flex items-center justify-between min-h-9 shrink-0">
               <Label htmlFor="output" className="text-base font-medium">
                 {mode === "encode" ? "Base64 Output" : "Text Output"}
               </Label>
@@ -162,11 +162,11 @@ export default function Base64Tool() {
               </Button>
             </div>
 
-            <div className="relative">
+            <div className="relative flex-1 min-h-0">
               <Textarea
                 id="output"
                 readOnly
-                className={`min-h-[300px] font-mono resize-none bg-muted/50 ${error ? "border-destructive/50 focus-visible:ring-destructive" : "focus-visible:ring-primary"}`}
+                className={`h-full font-mono resize-none bg-muted/50 ${error ? "border-destructive/50 focus-visible:ring-destructive" : "focus-visible:ring-primary"}`}
                 value={output}
               />
               {error && (

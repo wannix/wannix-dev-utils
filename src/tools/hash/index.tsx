@@ -68,7 +68,7 @@ export default function HashTool() {
       title="Hash Generator"
       description="Generate cryptographic hashes (MD5, SHA-1, SHA-256, etc.) from text."
     >
-      <div className="flex flex-col h-[calc(95vh-14rem)] min-h-[600px] gap-6">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-6">
         {/* Configuration Bar */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-muted/20 p-4 rounded-lg border border-border/40">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">

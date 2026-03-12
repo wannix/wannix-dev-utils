@@ -108,7 +108,7 @@ export default function JsonYamlTool() {
       title="JSON <> YAML Converter"
       description="Convert between JSON and YAML formats in real-time."
     >
-      <div className="flex flex-col h-[calc(95vh-14rem)] min-h-[600px] gap-6">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-6">
         {/* Toolbar */}
         <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
           <div className="hidden sm:block"></div> {/* Spacer for centering */}
