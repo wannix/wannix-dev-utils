@@ -89,7 +89,7 @@ export default function CurlTool() {
       title="Curl Builder"
       description="Build complex cURL commands with a visual interface."
     >
-      <div className="flex flex-col h-[calc(95vh-14rem)] min-h-[600px] gap-6">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-6">
         {/* Request Configuration */}
         <Card className="flex flex-col border-border/50 bg-card shadow-sm overflow-hidden flex-1">
           <CardHeader className="py-3 px-4 border-b border-border/40 bg-muted/20 shrink-0 flex flex-row items-center justify-between">
@@ -109,7 +109,7 @@ export default function CurlTool() {
               Reset
             </Button>
           </CardHeader>
-          <CardContent className="p-6 space-y-6 overflow-y-auto">
+          <CardContent className="p-6 space-y-6 overflow-y-auto scrollbar-thin">
             {/* Method & URL */}
             <div className="flex gap-4">
               <Select

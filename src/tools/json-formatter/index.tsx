@@ -528,7 +528,7 @@ export default function JsonFormatterTool(): JSX.Element {
         </div>
       }
     >
-      <div className="flex flex-col h-[calc(95vh-14rem)] min-h-[600px] gap-4">
+      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-4">
         {/* ── Toolbar ─────────────────────── */}
         <div className="flex flex-wrap items-center gap-2 bg-muted/20 p-2 rounded-lg border border-border/40">
           {/* Indent select */}
@@ -671,7 +671,7 @@ export default function JsonFormatterTool(): JSX.Element {
               </div>
             </CardHeader>
             <CardContent className="p-0 flex-1 relative overflow-hidden">
-              <div className="flex h-full overflow-auto">
+              <div className="flex h-full overflow-auto scrollbar-thin">
                 {/* Line numbers */}
                 {input.length > 0 && (
                   <div className="flex flex-col items-end px-2 py-4 text-xs text-muted-foreground/40 font-mono select-none bg-muted/10 border-r border-border/20 shrink-0 leading-relaxed">
@@ -775,7 +775,7 @@ export default function JsonFormatterTool(): JSX.Element {
                 <CopyButton text={minifiedOutput} label="Minified" />
               </div>
             </CardHeader>
-            <CardContent className="p-0 flex-1 overflow-auto bg-muted/5">
+            <CardContent className="p-0 flex-1 overflow-auto bg-muted/5 scrollbar-thin">
               {viewMode === "text" ? (
                 <textarea
                   className="h-full w-full font-mono text-sm resize-none border-0 focus-visible:ring-0 rounded-none bg-transparent p-4 leading-relaxed text-muted-foreground"
@@ -784,7 +784,7 @@ export default function JsonFormatterTool(): JSX.Element {
                   placeholder="Formatted JSON will appear here..."
                 />
               ) : treeData ? (
-                <div className="p-2 overflow-auto h-full">
+                <div className="p-2 overflow-auto h-full scrollbar-thin">
                   <TreeNodeView
                     node={treeData}
                     onToggle={handleToggleTreeNode}
@@ -874,7 +874,7 @@ export default function JsonFormatterTool(): JSX.Element {
 
         {/* ── JSONPath Results ─────────────── */}
         {jsonPathResults.length > 0 && (
-          <div className="bg-muted/20 border border-border/40 rounded-lg p-3 max-h-32 overflow-auto">
+          <div className="bg-muted/20 border border-border/40 rounded-lg p-3 max-h-32 overflow-auto scrollbar-thin">
             <div className="text-xs font-semibold text-muted-foreground mb-1.5">
               JSONPath Results ({jsonPathResults.length})
             </div>

@@ -12,7 +12,7 @@ export function Layout({ children }: LayoutProps): JSX.Element {
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 pl-64">
-          <div className="container py-6 px-6">{children}</div>
+          <div className="max-w-[1600px] mx-auto w-full py-4 px-6">{children}</div>
         </main>
       </div>
       <footer className="pl-64 border-t border-border/40 py-5">

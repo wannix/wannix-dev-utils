@@ -40,7 +40,7 @@ export default function CronTool() {
       title="Cron Tester"
       description="Validate cron expressions (standard & Quartz 7-field) and preview upcoming runs."
     >
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full">
+      <div className="flex flex-col gap-6 mx-auto w-full">
         {/* Input Area */}
         <Card className="border-border/50 bg-card shadow-sm">
           <CardHeader className="py-4 px-6 border-b border-border/40 bg-muted/20">
