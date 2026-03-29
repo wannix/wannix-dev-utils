@@ -61,7 +61,7 @@ export function generateHash(
           return "";
       }
     }
-  } catch (e: any) {
-    throw new Error(e.message || "Hashing failed");
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : "Hashing failed");
   }
 }

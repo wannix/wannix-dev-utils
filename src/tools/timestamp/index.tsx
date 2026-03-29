@@ -18,7 +18,7 @@ export default function TimestampTool() {
 
   useEffect(() => {
     handleConvert(input);
-  }, []);
+  }, [input]);
 
   const handleConvert = (val: string) => {
     if (!val.trim()) {
@@ -40,7 +40,6 @@ export default function TimestampTool() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInput(val);
-    handleConvert(val);
   };
 
   const handleClear = () => {
@@ -52,7 +51,6 @@ export default function TimestampTool() {
   const handleSetNow = () => {
     const now = Math.floor(Date.now() / 1000).toString();
     setInput(now);
-    handleConvert(now);
   };
 
   return (

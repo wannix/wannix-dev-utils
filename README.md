@@ -28,7 +28,6 @@ A collection of browser-based developer tools built with React, TypeScript, and 
 - **Build Tool**: Vite 5
 - **Styling**: Tailwind CSS 3 + Radix UI primitives
 - **State**: Zustand, React hooks
-- **PWA**: vite-plugin-pwa (offline support via Service Worker)
 - **Routing**: React Router v6
 
 ## 🚀 Quick Start

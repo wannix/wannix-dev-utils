@@ -36,7 +36,7 @@ export const decodeJWT = (token: string): DecodedJWT => {
     let header: JWTHeader;
     try {
       header = jwtDecode<JWTHeader>(token, { header: true });
-    } catch (e) {
+    } catch {
       throw new Error("Failed to decode header");
     }
 
@@ -44,7 +44,7 @@ export const decodeJWT = (token: string): DecodedJWT => {
     let payload: JWTPayload;
     try {
       payload = jwtDecode<JWTPayload>(token);
-    } catch (e) {
+    } catch {
       throw new Error("Failed to decode payload");
     }
 
