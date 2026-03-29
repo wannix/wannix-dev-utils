@@ -1,3 +1,4 @@
+import { APP_VERSION } from "@/lib/constants";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
@@ -16,9 +17,20 @@ export function Layout({ children }: LayoutProps): JSX.Element {
         </main>
       </div>
       <footer className="pl-64 border-t border-border/40 py-5">
-        <p className="text-center text-sm text-muted-foreground/60">
-          Made with ❤️ just for Devs!
-        </p>
+        <div className="mx-auto grid max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-6">
+          <div aria-hidden="true" />
+          <p className="text-center text-sm text-muted-foreground/60">
+            Made with ❤️ just for Devs!
+          </p>
+          <div className="justify-self-end">
+            <small
+              aria-label={`Application version ${APP_VERSION}`}
+              className="font-mono text-xs tabular-nums tracking-wide text-muted-foreground/45"
+            >
+              v{APP_VERSION}
+            </small>
+          </div>
+        </div>
       </footer>
     </div>
   );

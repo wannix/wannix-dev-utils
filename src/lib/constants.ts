@@ -1,6 +1,6 @@
 // App constants
 export const APP_NAME = "Dev Utilities Hub" as const;
-export const APP_VERSION = "0.1.0" as const;
+export const APP_VERSION = __APP_VERSION__;
 
 // Tool categories
 export const TOOL_CATEGORIES = {
