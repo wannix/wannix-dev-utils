@@ -1,4 +1,14 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type DragEvent,
+} from "react";
+import Editor, { loader } from "@monaco-editor/react";
+import * as monacoApi from "monaco-editor";
+import { useTheme } from "next-themes";
 import {
   Copy,
   Trash2,
@@ -11,6 +21,7 @@ import {
   SortAsc,
   Wand2,
   Search,
+  Replace,
   Upload,
   TreePine,
   FileText,
@@ -19,7 +30,13 @@ import {
 } from "lucide-react";
 import { ToolShell } from "@/components/layout/ToolShell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import {
@@ -30,15 +47,12 @@ import {
   autoFixJson,
   detectDuplicateKeys,
   buildTree,
-  evaluateJsonPath,
-  searchInObject,
   resolvePathBreadcrumb,
   parseInput,
 } from "./json-formatter.utils";
 import {
   DEFAULT_INDENT,
   MAX_INPUT_LENGTH,
-  PLACEHOLDER_JSON,
   INDENT_LABELS,
 } from "./json-formatter.constants";
 import type {
@@ -47,25 +61,28 @@ import type {
   ParseMode,
   ValidationError,
   TreeNode,
-  SearchMatch,
   DuplicateKeyWarning,
-  JsonPathResult,
 } from "./json-formatter.types";
 
-// ──────────────────────────────────────────────
-// Sub-components
-// ──────────────────────────────────────────────
+loader.config({ monaco: monacoApi });
 
-function CopyButton({ text, label }: { text: string; label: string }): JSX.Element {
+function CopyButton({
+  text,
+  label,
+}: {
+  text: string;
+  label: string;
+}): JSX.Element {
   const { copied, copyToClipboard } = useCopyToClipboard();
+
   return (
     <Button
       variant="ghost"
       size="sm"
       className={
         copied
-          ? "text-primary hover:text-primary gap-1.5"
-          : "text-muted-foreground gap-1.5"
+          ? "h-7 gap-1.5 px-2 text-[11px] text-primary hover:text-primary"
+          : "h-7 gap-1.5 px-2 text-[11px] text-muted-foreground"
       }
       onClick={() => copyToClipboard(text)}
       disabled={!text}
@@ -80,34 +97,22 @@ function CopyButton({ text, label }: { text: string; label: string }): JSX.Eleme
   );
 }
 
-/**
- * Recursive tree node renderer for the JSON tree view.
- */
 function TreeNodeView({
   node,
   onToggle,
   onSelect,
   selectedPath,
-  searchQuery,
   depth,
 }: {
   node: TreeNode;
   onToggle: (path: string[]) => void;
   onSelect: (path: string[]) => void;
   selectedPath: string;
-  searchQuery: string;
   depth: number;
 }): JSX.Element {
   const isSelected = resolvePathBreadcrumb(node.path) === selectedPath;
   const hasChildren = node.children.length > 0;
   const isExpandable = node.type === "object" || node.type === "array";
-  const q = searchQuery.toLowerCase();
-
-  const isKeyMatch = q && node.key.toLowerCase().includes(q);
-  const isValueMatch =
-    q &&
-    !isExpandable &&
-    String(node.value).toLowerCase().includes(q);
 
   const typeColorClass: Record<string, string> = {
     string: "text-green-600 dark:text-green-400",
@@ -118,10 +123,14 @@ function TreeNodeView({
     array: "text-muted-foreground",
   };
 
-  const formatValue = (n: TreeNode): string => {
-    if (n.type === "string") return `"${String(n.value)}"`;
-    if (n.type === "null") return "null";
-    return String(n.value);
+  const formatValue = (currentNode: TreeNode): string => {
+    if (currentNode.type === "string") {
+      return `"${String(currentNode.value)}"`;
+    }
+    if (currentNode.type === "null") {
+      return "null";
+    }
+    return String(currentNode.value);
   };
 
   const childCount =
@@ -134,15 +143,18 @@ function TreeNodeView({
   return (
     <div style={{ paddingLeft: depth * 16 }}>
       <div
-        className={`flex items-center gap-1 py-0.5 px-1 rounded text-sm font-mono cursor-pointer hover:bg-muted/50 transition-colors ${isSelected ? "bg-primary/10 ring-1 ring-primary/30" : ""}`}
+        className={`flex cursor-pointer items-center gap-1 rounded px-1 py-0.5 font-mono text-sm transition-colors hover:bg-muted/50 ${
+          isSelected ? "bg-primary/10 ring-1 ring-primary/30" : ""
+        }`}
         onClick={() => {
-          if (isExpandable) onToggle(node.path);
+          if (isExpandable) {
+            onToggle(node.path);
+          }
           onSelect(node.path);
         }}
       >
-        {/* Expand/collapse arrow */}
         {isExpandable ? (
-          <span className="w-4 h-4 flex items-center justify-center shrink-0">
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center">
             {node.collapsed ? (
               <ChevronRight className="h-3 w-3 text-muted-foreground" />
             ) : (
@@ -150,42 +162,34 @@ function TreeNodeView({
             )}
           </span>
         ) : (
-          <span className="w-4 h-4 shrink-0" />
+          <span className="h-4 w-4 shrink-0" />
         )}
 
-        {/* Key */}
         {node.path.length > 0 && (
-          <span
-            className={`${isKeyMatch ? "bg-yellow-300/40 dark:bg-yellow-500/30 rounded px-0.5" : "text-foreground"}`}
-          >
+          <span className="text-foreground">
             {/^\d+$/.test(node.key) ? `[${node.key}]` : `"${node.key}"`}
             <span className="text-muted-foreground">: </span>
           </span>
         )}
 
-        {/* Value or child count */}
         {isExpandable ? (
-          <span className="text-muted-foreground text-xs">{childCount}</span>
+          <span className="text-xs text-muted-foreground">{childCount}</span>
         ) : (
-          <span
-            className={`truncate ${typeColorClass[node.type] || ""} ${isValueMatch ? "bg-yellow-300/40 dark:bg-yellow-500/30 rounded px-0.5" : ""}`}
-          >
+          <span className={`truncate ${typeColorClass[node.type] ?? ""}`}>
             {formatValue(node)}
           </span>
         )}
       </div>
 
-      {/* Children */}
       {!node.collapsed && hasChildren && (
         <div>
-          {node.children.map((child, idx) => (
+          {node.children.map((child, index) => (
             <TreeNodeView
-              key={`${child.key}-${idx}`}
+              key={`${child.key}-${index}`}
               node={child}
               onToggle={onToggle}
               onSelect={onSelect}
               selectedPath={selectedPath}
-              searchQuery={searchQuery}
               depth={depth + 1}
             />
           ))}
@@ -195,316 +199,608 @@ function TreeNodeView({
   );
 }
 
-// ──────────────────────────────────────────────
-// Main Component
-// ──────────────────────────────────────────────
+function buildMarkers(
+  errors: ValidationError[],
+): monacoApi.editor.IMarkerData[] {
+  return errors.map((error) => ({
+    severity: monacoApi.MarkerSeverity.Error,
+    message: error.message,
+    startLineNumber: Math.max(error.line, 1),
+    startColumn: Math.max(error.column, 1),
+    endLineNumber: Math.max(error.line, 1),
+    endColumn: Math.max(error.column + 1, 2),
+  }));
+}
+
+function duplicateKeyMessage(warnings: DuplicateKeyWarning[]): string {
+  return warnings
+    .map((warning) => `"${warning.key}" (lines ${warning.lines.join(", ")})`)
+    .join("; ");
+}
+
+interface FindControllerContribution {
+  closeFindWidget: () => void;
+}
+
+function getFindController(
+  editor: monacoApi.editor.IStandaloneCodeEditor,
+): FindControllerContribution | null {
+  const contribution = editor.getContribution("editor.contrib.findController");
+
+  if (!contribution || typeof contribution !== "object") {
+    return null;
+  }
+
+  const candidate = contribution as { closeFindWidget?: unknown };
+  if (typeof candidate.closeFindWidget !== "function") {
+    return null;
+  }
+
+  return contribution as FindControllerContribution;
+}
 
 export default function JsonFormatterTool(): JSX.Element {
-  // Core state
-  const [input, setInput] = useState("");
-  const [output, setOutput] = useState("");
-  const [errors, setErrors] = useState<ValidationError[]>([]);
-  const [duplicateKeys, setDuplicateKeys] = useState<DuplicateKeyWarning[]>([]);
+  const { resolvedTheme } = useTheme();
+  const editorRef = useRef<monacoApi.editor.IStandaloneCodeEditor | null>(null);
+  const sortRestoreRef = useRef<string | null>(null);
+  const findWidgetObserverRef = useRef<MutationObserver | null>(null);
 
-  // Settings
+  const [input, setInput] = useState("");
   const [indent, setIndent] = useState<IndentStyle>(DEFAULT_INDENT);
   const [sortKeys, setSortKeys] = useState(false);
   const [parseMode, setParseMode] = useState<ParseMode>("strict");
   const [viewMode, setViewMode] = useState<ViewMode>("text");
-
-  // Search & JSONPath
-  const [searchQuery, setSearchQuery] = useState("");
-  const [jsonPathQuery, setJsonPathQuery] = useState("");
-  const [jsonPathResults, setJsonPathResults] = useState<JsonPathResult[]>([]);
-  const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
-  const [searchIndex, setSearchIndex] = useState(0);
-
-  // Tree state
+  const [isFindWidgetOpen, setIsFindWidgetOpen] = useState(false);
+  const [isReplaceWidgetOpen, setIsReplaceWidgetOpen] = useState(false);
   const [treeData, setTreeData] = useState<TreeNode | null>(null);
   const [selectedPath, setSelectedPath] = useState("");
-
-  // Drag & drop
   const [isDragging, setIsDragging] = useState(false);
-  const dropRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [cursorPosition, setCursorPosition] = useState({
+    lineNumber: 1,
+    column: 1,
+  });
 
-  // ── Process input ──────────────────────────
-  const processInput = useCallback(
-    (value: string, currentIndent: IndentStyle, currentSortKeys: boolean, currentParseMode: ParseMode) => {
-      if (!value.trim()) {
-        setOutput("");
-        setErrors([]);
-        setDuplicateKeys([]);
-        setTreeData(null);
-        setJsonPathResults([]);
-        setSearchMatches([]);
-        return;
-      }
+  const isJson5Mode = parseMode === "json5";
+  const editorLanguage = isJson5Mode ? "javascript" : "json";
+  const editorTheme = resolvedTheme === "dark" ? "vs-dark" : "vs";
 
-      // Validate
-      const validationErrors =
-        currentParseMode === "json5"
-          ? validateJson5(value)
-          : validateJson(value);
-      setErrors(validationErrors);
+  const errors = useMemo(
+    () => (isJson5Mode ? validateJson5(input) : validateJson(input)),
+    [input, isJson5Mode],
+  );
 
-      // Duplicate keys
-      setDuplicateKeys(detectDuplicateKeys(value));
+  const duplicateKeys = useMemo(() => detectDuplicateKeys(input), [input]);
 
-      if (validationErrors.length > 0) {
-        setOutput("");
-        setTreeData(null);
-        return;
-      }
+  const parsedValue = useMemo(() => {
+    if (!input.trim() || errors.length > 0) {
+      return undefined;
+    }
 
-      // Format
-      try {
-        const parsed = parseInput(value, currentParseMode === "json5");
-        if (parsed === undefined) return;
+    try {
+      return parseInput(input, isJson5Mode);
+    } catch {
+      return undefined;
+    }
+  }, [errors.length, input, isJson5Mode]);
 
-        // Re-serialize through standard JSON for format
-        const jsonString = JSON.stringify(parsed);
-        const formatted = formatJson(jsonString, currentIndent, currentSortKeys);
-        setOutput(formatted);
+  const isValid = errors.length === 0 && input.trim().length > 0;
 
-        // Build tree
-        setTreeData(buildTree(parsed));
-      } catch (err) {
-        if (err instanceof Error) {
-          setErrors([{ message: err.message, line: 1, column: 1 }]);
+  const minifiedContent = useMemo(() => {
+    if (!isValid) {
+      return "";
+    }
+
+    try {
+      return minifyJson(input, isJson5Mode);
+    } catch {
+      return "";
+    }
+  }, [input, isJson5Mode, isValid]);
+
+  const formattedContent = useMemo(() => {
+    if (!isValid) {
+      return "";
+    }
+
+    try {
+      return formatJson(input, indent, sortKeys, isJson5Mode);
+    } catch {
+      return "";
+    }
+  }, [indent, input, isJson5Mode, isValid, sortKeys]);
+
+  const lineCount = useMemo(
+    () => (input.length > 0 ? input.split("\n").length : 1),
+    [input],
+  );
+
+  const canFormat =
+    viewMode === "text" &&
+    isValid &&
+    formattedContent.length > 0 &&
+    input !== formattedContent;
+
+  const canMinify =
+    viewMode === "text" &&
+    isValid &&
+    minifiedContent.length > 0 &&
+    input !== minifiedContent;
+
+  const canToggleSort = sortKeys || isValid;
+
+  const editorOptions =
+    useMemo<monacoApi.editor.IStandaloneEditorConstructionOptions>(
+      () => ({
+        automaticLayout: true,
+        minimap: { enabled: false },
+        fontFamily:
+          '"JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+        fontSize: 13,
+        lineHeight: 21,
+        padding: { top: 12, bottom: 12 },
+        renderWhitespace: "selection",
+        scrollBeyondLastLine: false,
+        roundedSelection: false,
+        wordWrap: "off",
+        tabSize: indent === "4-spaces" ? 4 : 2,
+        insertSpaces: indent !== "tabs",
+        bracketPairColorization: { enabled: true },
+        guides: {
+          indentation: true,
+          bracketPairs: true,
+        },
+        stickyScroll: { enabled: false },
+        glyphMargin: false,
+        folding: true,
+        lineNumbersMinChars: 3,
+        contextmenu: true,
+        scrollbar: {
+          verticalScrollbarSize: 10,
+          horizontalScrollbarSize: 10,
+        },
+        occurrencesHighlight: "off",
+        selectionHighlight: false,
+        renderLineHighlight: "all",
+        quickSuggestions: false,
+        suggestOnTriggerCharacters: false,
+        unicodeHighlight: {
+          ambiguousCharacters: false,
+        },
+      }),
+      [indent],
+    );
+
+  const applyEditorValue = useCallback((nextValue: string) => {
+    const editor = editorRef.current;
+    const model = editor?.getModel();
+
+    if (editor && model) {
+      editor.pushUndoStop();
+      editor.executeEdits("json-formatter", [
+        {
+          range: model.getFullModelRange(),
+          text: nextValue,
+          forceMoveMarkers: true,
+        },
+      ]);
+      editor.pushUndoStop();
+      editor.focus();
+    }
+
+    setInput(nextValue);
+  }, []);
+
+  const handleEditorChange = useCallback((value: string | undefined) => {
+    const nextValue = value ?? "";
+
+    if (nextValue.length > MAX_INPUT_LENGTH) {
+      return;
+    }
+
+    setInput(nextValue);
+  }, []);
+
+  const handleEditorMount = useCallback(
+    (editor: monacoApi.editor.IStandaloneCodeEditor) => {
+      editorRef.current = editor;
+      setCursorPosition(editor.getPosition() ?? { lineNumber: 1, column: 1 });
+      editor.onDidChangeCursorPosition((event) => {
+        setCursorPosition({
+          lineNumber: event.position.lineNumber,
+          column: event.position.column,
+        });
+      });
+
+      const syncFindWidgetState = () => {
+        const editorDomNode = editor.getDomNode();
+        const findWidget = editorDomNode?.querySelector(
+          ".find-widget",
+        ) as HTMLElement | null;
+
+        // Monaco adds native title tooltips to find-widget action buttons.
+        // Strip them to keep the widget visually quiet.
+        if (findWidget) {
+          const tooltipTargets = findWidget.querySelectorAll<HTMLElement>(
+            "[title]",
+          );
+          tooltipTargets.forEach((target) => {
+            target.removeAttribute("title");
+          });
         }
-        setOutput("");
-        setTreeData(null);
+
+        const isVisible = Boolean(findWidget?.classList.contains("visible"));
+        const isReplaceVisible =
+          isVisible &&
+          Boolean(findWidget?.classList.contains("replaceToggled"));
+
+        setIsFindWidgetOpen(isVisible);
+        setIsReplaceWidgetOpen(isReplaceVisible);
+      };
+
+      findWidgetObserverRef.current?.disconnect();
+      const editorDomNode = editor.getDomNode();
+      if (editorDomNode) {
+        const observer = new MutationObserver(() => {
+          syncFindWidgetState();
+        });
+        observer.observe(editorDomNode, {
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["class", "style"],
+        });
+        findWidgetObserverRef.current = observer;
       }
+
+      editor.onDidDispose(() => {
+        findWidgetObserverRef.current?.disconnect();
+        findWidgetObserverRef.current = null;
+      });
+
+      syncFindWidgetState();
+      editor.focus();
     },
     [],
   );
 
-  useEffect(() => {
-    processInput(input, indent, sortKeys, parseMode);
-  }, [input, indent, sortKeys, parseMode, processInput]);
+  const closeSearchWidgets = useCallback(() => {
+    const editor = editorRef.current;
 
-  // ── Search effect ──────────────────────────
-  useEffect(() => {
-    if (!searchQuery || !input.trim()) {
-      setSearchMatches([]);
-      setSearchIndex(0);
-      return;
+    if (editor) {
+      const findController = getFindController(editor);
+      findController?.closeFindWidget();
     }
-    try {
-      const parsed = parseInput(input, parseMode === "json5");
-      if (parsed === undefined) return;
-      const matches = searchInObject(parsed, searchQuery);
-      setSearchMatches(matches);
-      setSearchIndex(0);
-    } catch {
-      setSearchMatches([]);
-    }
-  }, [searchQuery, input, parseMode]);
 
-  // ── JSONPath effect ────────────────────────
-  useEffect(() => {
-    if (!jsonPathQuery || !input.trim()) {
-      setJsonPathResults([]);
-      return;
-    }
-    try {
-      const parsed = parseInput(input, parseMode === "json5");
-      if (parsed === undefined) return;
-      const results = evaluateJsonPath(parsed, jsonPathQuery);
-      setJsonPathResults(results);
-    } catch {
-      setJsonPathResults([]);
-    }
-  }, [jsonPathQuery, input, parseMode]);
+    requestAnimationFrame(() => {
+      const editorDomNode = editorRef.current?.getDomNode();
+      const findWidget = editorDomNode?.querySelector(
+        ".find-widget",
+      ) as HTMLElement | null;
 
-  // ── Handlers ───────────────────────────────
-  const handleClear = useCallback(() => {
-    setInput("");
-    setOutput("");
-    setErrors([]);
-    setDuplicateKeys([]);
-    setTreeData(null);
-    setSearchQuery("");
-    setJsonPathQuery("");
-    setJsonPathResults([]);
-    setSearchMatches([]);
-    setSelectedPath("");
-    setSortKeys(false);
-    inputRef.current?.focus();
+      const isVisible = Boolean(findWidget?.classList.contains("visible"));
+      const isReplaceVisible =
+        isVisible && Boolean(findWidget?.classList.contains("replaceToggled"));
+
+      setIsFindWidgetOpen(isVisible);
+      setIsReplaceWidgetOpen(isReplaceVisible);
+    });
   }, []);
 
-  const handleAutoFix = useCallback(() => {
-    if (!input.trim()) return;
-    try {
-      const fixed = autoFixJson(input);
-      setInput(fixed);
-    } catch (err) {
-      // If JSON5 can't parse it either, show the error
-      if (err instanceof Error) {
-        setErrors([{ message: `Auto-fix failed: ${err.message}`, line: 1, column: 1 }]);
+  const handleIndentChange = useCallback(
+    (nextIndent: IndentStyle) => {
+      setIndent(nextIndent);
+
+      if (!input.trim() || !isValid) {
+        return;
       }
-    }
-  }, [input]);
 
-  const handleMinify = useCallback(() => {
-    if (!output) return;
-    try {
-      const minified = minifyJson(output);
-      setOutput(minified);
-    } catch {
-      // output is already derived from valid parse, shouldn't fail
-    }
-  }, [output]);
+      try {
+        const nextFormattedValue = formatJson(
+          input,
+          nextIndent,
+          sortKeys,
+          isJson5Mode,
+        );
 
-  const handlePrettyPrint = useCallback(() => {
-    // Re-trigger format from current input
-    processInput(input, indent, sortKeys, parseMode);
-  }, [input, indent, sortKeys, parseMode, processInput]);
-
-  const handleToggleTreeNode = useCallback(
-    (path: string[]) => {
-      if (!treeData) return;
-      const toggleNode = (node: TreeNode, targetPath: string[]): TreeNode => {
-        const pathStr = JSON.stringify(node.path);
-        const targetStr = JSON.stringify(targetPath);
-        if (pathStr === targetStr) {
-          return { ...node, collapsed: !node.collapsed };
+        if (nextFormattedValue !== input) {
+          applyEditorValue(nextFormattedValue);
         }
-        return {
-          ...node,
-          children: node.children.map((child) =>
-            toggleNode(child, targetPath),
-          ),
-        };
-      };
-      setTreeData(toggleNode(treeData, path));
+      } catch {
+        // Validation already drives the editor markers and status UI.
+      }
     },
-    [treeData],
+    [applyEditorValue, input, isJson5Mode, isValid, sortKeys],
   );
 
-  const handleExpandAll = useCallback(() => {
-    if (!treeData) return;
-    const expandAll = (node: TreeNode): TreeNode => ({
-      ...node,
-      collapsed: false,
-      children: node.children.map(expandAll),
+  const handleClear = useCallback(() => {
+    sortRestoreRef.current = null;
+    closeSearchWidgets();
+    applyEditorValue("");
+    setSortKeys(false);
+    setSelectedPath("");
+  }, [applyEditorValue, closeSearchWidgets]);
+
+  const handleFormat = useCallback(() => {
+    if (!canFormat) {
+      return;
+    }
+
+    try {
+      applyEditorValue(formattedContent);
+    } catch {
+      // Validation already drives the editor markers and status UI.
+    }
+  }, [applyEditorValue, canFormat, formattedContent]);
+
+  const handleMinify = useCallback(() => {
+    if (!canMinify) {
+      return;
+    }
+
+    try {
+      applyEditorValue(minifiedContent);
+    } catch {
+      // Validation already drives the editor markers and status UI.
+    }
+  }, [applyEditorValue, canMinify, minifiedContent]);
+
+  const handleAutoFix = useCallback(() => {
+    if (!input.trim()) {
+      return;
+    }
+
+    try {
+      const fixed = autoFixJson(input);
+      applyEditorValue(formatJson(fixed, indent, sortKeys));
+    } catch {
+      // Auto-fix stays silent when JSON5 repair also fails.
+    }
+  }, [applyEditorValue, indent, input, sortKeys]);
+
+  const handleToggleSortKeys = useCallback(() => {
+    if (sortKeys) {
+      const restoreValue = sortRestoreRef.current;
+      sortRestoreRef.current = null;
+      setSortKeys(false);
+
+      if (restoreValue !== null) {
+        applyEditorValue(restoreValue);
+      }
+
+      return;
+    }
+
+    if (!isValid || !input.trim()) {
+      return;
+    }
+
+    try {
+      const sortedValue = formatJson(input, indent, true, isJson5Mode);
+      sortRestoreRef.current = input;
+      setSortKeys(true);
+
+      if (sortedValue !== input) {
+        applyEditorValue(sortedValue);
+      }
+    } catch {
+      sortRestoreRef.current = null;
+    }
+  }, [applyEditorValue, indent, input, isJson5Mode, isValid, sortKeys]);
+
+  const handleToggleTreeNode = useCallback((path: string[]) => {
+    setTreeData((currentTree) => {
+      if (!currentTree) {
+        return currentTree;
+      }
+
+      const toggleNode = (node: TreeNode): TreeNode => {
+        if (JSON.stringify(node.path) === JSON.stringify(path)) {
+          return { ...node, collapsed: !node.collapsed };
+        }
+
+        return {
+          ...node,
+          children: node.children.map(toggleNode),
+        };
+      };
+
+      return toggleNode(currentTree);
     });
-    setTreeData(expandAll(treeData));
-  }, [treeData]);
+  }, []);
+
+  const handleExpandAll = useCallback(() => {
+    setTreeData((currentTree) => {
+      if (!currentTree) {
+        return currentTree;
+      }
+
+      const expandNode = (node: TreeNode): TreeNode => ({
+        ...node,
+        collapsed: false,
+        children: node.children.map(expandNode),
+      });
+
+      return expandNode(currentTree);
+    });
+  }, []);
 
   const handleCollapseAll = useCallback(() => {
-    if (!treeData) return;
-    const collapseAll = (node: TreeNode): TreeNode => ({
-      ...node,
-      collapsed: node.children.length > 0,
-      children: node.children.map(collapseAll),
+    setTreeData((currentTree) => {
+      if (!currentTree) {
+        return currentTree;
+      }
+
+      const collapseNode = (node: TreeNode): TreeNode => ({
+        ...node,
+        collapsed: node.children.length > 0,
+        children: node.children.map(collapseNode),
+      });
+
+      return collapseNode(currentTree);
     });
-    setTreeData(collapseAll(treeData));
-  }, [treeData]);
+  }, []);
 
   const handleSelectNode = useCallback((path: string[]) => {
     setSelectedPath(resolvePathBreadcrumb(path));
   }, []);
 
-  const cycleSearchMatch = useCallback(
-    (direction: 1 | -1) => {
-      if (searchMatches.length === 0) return;
-      const next =
-        (searchIndex + direction + searchMatches.length) %
-        searchMatches.length;
-      setSearchIndex(next);
-      const match = searchMatches[next];
-      setSelectedPath(resolvePathBreadcrumb(match.path));
+  const handleToggleFindWidget = useCallback(() => {
+    if (viewMode !== "text") {
+      return;
+    }
+
+    const editor = editorRef.current;
+    if (!editor) {
+      return;
+    }
+
+    editor.focus();
+
+    if (isReplaceWidgetOpen) {
+      getFindController(editor)?.closeFindWidget();
+      void editor.getAction("actions.find")?.run();
+      setIsFindWidgetOpen(true);
+      setIsReplaceWidgetOpen(false);
+      return;
+    }
+
+    if (isFindWidgetOpen) {
+      closeSearchWidgets();
+      return;
+    }
+
+    void editor.getAction("actions.find")?.run();
+    setIsFindWidgetOpen(true);
+    setIsReplaceWidgetOpen(false);
+  }, [closeSearchWidgets, isFindWidgetOpen, isReplaceWidgetOpen, viewMode]);
+
+  const handleToggleReplaceWidget = useCallback(() => {
+    if (viewMode !== "text") {
+      return;
+    }
+
+    const editor = editorRef.current;
+    if (!editor) {
+      return;
+    }
+
+    editor.focus();
+
+    if (isReplaceWidgetOpen) {
+      closeSearchWidgets();
+      return;
+    }
+
+    void editor.getAction("editor.action.startFindReplaceAction")?.run();
+    setIsFindWidgetOpen(true);
+    setIsReplaceWidgetOpen(true);
+  }, [closeSearchWidgets, isReplaceWidgetOpen, viewMode]);
+
+  const handleFileImport = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result;
+        if (typeof text === "string" && text.length <= MAX_INPUT_LENGTH) {
+          sortRestoreRef.current = null;
+          setSortKeys(false);
+          applyEditorValue(text);
+        }
+      };
+      reader.readAsText(file);
     },
-    [searchMatches, searchIndex],
+    [applyEditorValue],
   );
 
-  // ── Drag & drop ────────────────────────────
-  const handleDragOver = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (!isDragging) setIsDragging(true);
-    },
-    [isDragging],
-  );
+  const handleDragOver = useCallback((event: DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  }, []);
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDragLeave = useCallback((event: DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     setIsDragging(false);
   }, []);
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
+    (event: DragEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
       setIsDragging(false);
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        const file = files[0];
-        if (
-          file.type === "application/json" ||
+
+      const file = event.dataTransfer.files[0];
+      if (
+        file &&
+        (file.type === "application/json" ||
           file.name.endsWith(".json") ||
-          file.name.endsWith(".json5")
-        ) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const text = event.target?.result;
-            if (typeof text === "string") {
-              setInput(text);
-            }
-          };
-          reader.readAsText(file);
-        }
+          file.name.endsWith(".json5"))
+      ) {
+        handleFileImport(file);
       }
     },
-    [],
+    [handleFileImport],
   );
 
-  // ── Keyboard shortcuts ─────────────────────
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === "Escape") {
-        handleClear();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "f") {
-        e.preventDefault();
-        handlePrettyPrint();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleClear, handlePrettyPrint]);
-
-  // ── Auto-focus input ───────────────────────
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  // ── Computed values ────────────────────────
-  const minifiedOutput = useMemo(() => {
-    if (!output) return "";
-    try {
-      return minifyJson(output);
-    } catch {
-      return "";
+    setTreeData(parsedValue === undefined ? null : buildTree(parsedValue));
+    if (parsedValue === undefined) {
+      setSelectedPath("");
     }
-  }, [output]);
+  }, [parsedValue]);
 
-  const lineNumbers = useMemo(() => {
-    const lines = input.split("\n");
-    return lines.map((_, i) => i + 1);
-  }, [input]);
+  useEffect(() => {
+    const model = editorRef.current?.getModel();
+    if (!model) {
+      return;
+    }
 
-  const isValid = errors.length === 0 && input.trim().length > 0;
+    monacoApi.editor.setModelMarkers(
+      model,
+      "json-formatter-validation",
+      isJson5Mode ? buildMarkers(errors) : [],
+    );
 
-  // ── Render ─────────────────────────────────
+    return () => {
+      monacoApi.editor.setModelMarkers(model, "json-formatter-validation", []);
+    };
+  }, [errors, isJson5Mode]);
+
+  useEffect(() => {
+    if (viewMode !== "text") {
+      closeSearchWidgets();
+      return;
+    }
+
+    editorRef.current?.focus();
+  }, [closeSearchWidgets, viewMode]);
+
+  const statusText =
+    input.trim().length === 0
+      ? "Ready"
+      : isValid
+        ? "Valid"
+        : `${errors.length} error${errors.length === 1 ? "" : "s"}`;
+  const firstError = errors[0];
+  const compactToolbarButtonClass = "h-7 gap-1.5 px-2 text-[11px]";
+  const compactMetaClass = "px-1.5 text-[11px] text-muted-foreground/70";
+
   return (
     <ToolShell
       title="JSON Formatter"
-      description="Format, validate, search, and navigate JSON with tree view and auto-fix."
+      description="Edit, validate, search, and format JSON in a VS Code-style editor with an alternate tree view."
+      headerClassName="px-4 py-3.5 sm:px-5 sm:py-3.5"
+      contentClassName="p-3 pt-3 sm:p-4 sm:pt-4"
+      headerContent={
+        <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
+          <CardTitle className="shrink-0 text-lg font-bold tracking-tight text-card-foreground">
+            JSON Formatter
+          </CardTitle>
+          <CardDescription className="min-w-0 truncate text-sm text-muted-foreground">
+            Edit, validate, search, and format JSON in a VS Code-style editor with an alternate tree view.
+          </CardDescription>
+        </div>
+      }
       headerActions={
         <div className="flex items-center gap-2">
           <Badge
@@ -523,19 +819,19 @@ export default function JsonFormatterTool(): JSX.Element {
             className="text-muted-foreground hover:text-destructive"
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Clear (Esc)
+            Clear
           </Button>
         </div>
       }
     >
-      <div className="flex flex-col h-[calc(100vh-16rem)] min-h-[400px] gap-4">
-        {/* ── Toolbar ─────────────────────── */}
-        <div className="flex flex-wrap items-center gap-2 bg-muted/20 p-2 rounded-lg border border-border/40">
-          {/* Indent select */}
+      <div className="flex h-[calc(100vh-12rem)] min-h-[540px] flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-border/40 bg-muted/20 p-1.5">
           <select
             value={indent}
-            onChange={(e) => setIndent(e.target.value as IndentStyle)}
-            className="h-8 rounded-md border border-border/50 bg-background px-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-primary"
+            onChange={(event) =>
+              handleIndentChange(event.target.value as IndentStyle)
+            }
+            className="h-7 rounded-md border border-border/50 bg-background px-2 text-[11px] font-medium focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {(Object.keys(INDENT_LABELS) as IndentStyle[]).map((key) => (
               <option key={key} value={key}>
@@ -544,15 +840,14 @@ export default function JsonFormatterTool(): JSX.Element {
             ))}
           </select>
 
-          <div className="w-px h-6 bg-border/50 hidden sm:block" />
+          <div className="hidden h-5 w-px bg-border/50 lg:block" />
 
-          {/* Format / Minify */}
           <Button
             variant="outline"
             size="sm"
-            onClick={handlePrettyPrint}
-            className="gap-1.5 text-xs"
-            disabled={!input.trim()}
+            onClick={handleFormat}
+            className={compactToolbarButtonClass}
+            disabled={!canFormat}
           >
             <Maximize2 className="h-3.5 w-3.5" />
             Format
@@ -561,88 +856,131 @@ export default function JsonFormatterTool(): JSX.Element {
             variant="outline"
             size="sm"
             onClick={handleMinify}
-            className="gap-1.5 text-xs"
-            disabled={!output}
+            className={compactToolbarButtonClass}
+            disabled={!canMinify}
           >
             <Minimize2 className="h-3.5 w-3.5" />
             Minify
           </Button>
-
-          <div className="w-px h-6 bg-border/50 hidden sm:block" />
-
-          {/* Sort Keys */}
           <Button
             variant={sortKeys ? "default" : "outline"}
             size="sm"
-            onClick={() => setSortKeys(!sortKeys)}
-            className="gap-1.5 text-xs"
+            onClick={handleToggleSortKeys}
+            className={compactToolbarButtonClass}
+            disabled={!canToggleSort}
           >
             <SortAsc className="h-3.5 w-3.5" />
             Sort Keys
           </Button>
-
-          {/* Auto Fix */}
           <Button
             variant="outline"
             size="sm"
             onClick={handleAutoFix}
-            className="gap-1.5 text-xs"
+            className={compactToolbarButtonClass}
             disabled={!input.trim() || isValid}
           >
             <Wand2 className="h-3.5 w-3.5" />
             Auto Fix
           </Button>
 
+          <div className="hidden h-5 w-px bg-border/50 lg:block" />
+
+          <Button
+            variant={
+              isFindWidgetOpen && !isReplaceWidgetOpen ? "default" : "outline"
+            }
+            size="sm"
+            onClick={handleToggleFindWidget}
+            className={compactToolbarButtonClass}
+            disabled={viewMode !== "text"}
+          >
+            <Search className="h-3.5 w-3.5" />
+            Find
+          </Button>
+          <Button
+            variant={isReplaceWidgetOpen ? "default" : "outline"}
+            size="sm"
+            onClick={handleToggleReplaceWidget}
+            className={compactToolbarButtonClass}
+            disabled={viewMode !== "text"}
+          >
+            <Replace className="h-3.5 w-3.5" />
+            Replace
+          </Button>
+
           <div className="flex-1" />
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 rounded-md border border-border/50 p-0.5 bg-background">
+          <div className="flex items-center gap-1 rounded-md border border-border/50 bg-background p-0.5">
             <button
               onClick={() => setViewMode("text")}
-              className={`rounded px-2 py-1 text-xs font-medium transition-colors ${viewMode === "text" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`rounded px-2 py-1 text-[11px] font-medium transition-colors ${
+                viewMode === "text"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <FileText className="h-3.5 w-3.5 inline-block mr-1" />
+              <FileText className="mr-1 inline-block h-3.5 w-3.5" />
               Text
             </button>
             <button
               onClick={() => setViewMode("tree")}
-              className={`rounded px-2 py-1 text-xs font-medium transition-colors ${viewMode === "tree" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`rounded px-2 py-1 text-[11px] font-medium transition-colors ${
+                viewMode === "tree"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <TreePine className="h-3.5 w-3.5 inline-block mr-1" />
+              <TreePine className="mr-1 inline-block h-3.5 w-3.5" />
               Tree
             </button>
           </div>
         </div>
 
-        {/* ── Duplicate key warning ───────── */}
         {duplicateKeys.length > 0 && (
-          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-md px-3 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+          <div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] text-amber-700 dark:text-amber-400">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-            <span>
-              Duplicate keys found:{" "}
-              {duplicateKeys.map((d) => `"${d.key}" (lines ${d.lines.join(", ")})`).join("; ")}
+            <span className="truncate">
+              Duplicate keys found: {duplicateKeyMessage(duplicateKeys)}
             </span>
           </div>
         )}
 
-        {/* ── Main Editor Area ────────────── */}
-        <div className="grid lg:grid-cols-2 gap-4 flex-1 min-h-0">
-          {/* Input Pane */}
-          <Card
-            ref={dropRef}
-            className={`flex flex-col border-border/50 bg-card shadow-sm overflow-hidden relative ${errors.length > 0 ? "border-destructive/50" : ""} ${isDragging ? "ring-2 ring-primary border-primary" : ""}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <CardHeader className="py-2 px-3 border-b border-border/40 bg-muted/20 shrink-0 flex flex-row items-center justify-between">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Input
+        {firstError && (
+          <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-[11px] text-destructive">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
+              Line {firstError.line}, Col {firstError.column}:{" "}
+              {firstError.message}
+              {errors.length > 1 ? ` (+${errors.length - 1} more)` : ""}
+            </span>
+          </div>
+        )}
+
+        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-border/50 bg-card shadow-sm">
+          <CardHeader className="flex shrink-0 flex-row items-center justify-between gap-2 border-b border-border/40 bg-muted/20 px-2.5 py-1.5">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                {viewMode === "text" ? "Editor" : "Tree View"}
               </CardTitle>
-              <div className="flex items-center gap-1">
+              {viewMode === "text" && (
+                <Badge
+                  variant="secondary"
+                  className={`text-[10px] ${
+                    isValid
+                      ? "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400"
+                      : "border-border/50"
+                  }`}
+                >
+                  {statusText}
+                </Badge>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1">
+              {viewMode === "text" ? (
                 <label
-                  className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  title="Upload .json file"
+                  className="flex cursor-pointer items-center gap-1.5 px-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                  title="Upload .json or .json5 file"
                 >
                   <Upload className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Upload</span>
@@ -650,259 +988,127 @@ export default function JsonFormatterTool(): JSX.Element {
                     type="file"
                     accept=".json,.json5"
                     className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = (ev) => {
-                        const text = ev.target?.result;
-                        if (typeof text === "string") {
-                          setInput(text);
-                        }
-                      };
-                      reader.readAsText(file);
-                      e.target.value = "";
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) {
+                        handleFileImport(file);
+                      }
+                      event.target.value = "";
                     }}
                   />
                 </label>
-                <span className="text-xs text-muted-foreground/60">
-                  {input.length > 0 && `${input.length.toLocaleString()} chars`}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0 flex-1 relative overflow-hidden">
-              <div className="flex h-full overflow-auto scrollbar-thin">
-                {/* Line numbers */}
-                {input.length > 0 && (
-                  <div className="flex flex-col items-end px-2 py-4 text-xs text-muted-foreground/40 font-mono select-none bg-muted/10 border-r border-border/20 shrink-0 leading-relaxed">
-                    {lineNumbers.map((num) => (
-                      <span
-                        key={num}
-                        className={
-                          errors.some((e) => e.line === num)
-                            ? "text-destructive font-bold"
-                            : ""
-                        }
-                      >
-                        {num}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <textarea
-                  ref={inputRef}
-                  className="flex-1 h-full font-mono text-sm resize-none border-0 focus-visible:ring-0 focus:outline-none rounded-none bg-transparent p-4 leading-relaxed"
-                  placeholder={`Paste JSON here or drag & drop a .json file...\n\nExample:\n${PLACEHOLDER_JSON}`}
-                  value={input}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.length <= MAX_INPUT_LENGTH) {
-                      setInput(val);
-                    }
-                  }}
-                  spellCheck={false}
-                />
-              </div>
+              ) : treeData ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground"
+                    onClick={handleExpandAll}
+                    title="Expand all"
+                  >
+                    <ChevronsUpDown className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground"
+                    onClick={handleCollapseAll}
+                    title="Collapse all"
+                  >
+                    <ChevronsDownUp className="h-3.5 w-3.5" />
+                  </Button>
+                </>
+              ) : null}
 
-              {/* Error overlay */}
-              {errors.length > 0 && (
-                <div className="absolute bottom-0 left-0 right-0 bg-destructive/10 border-t border-destructive/20 px-3 py-2 text-xs text-destructive space-y-0.5">
-                  {errors.map((err, i) => (
-                    <div key={i} className="flex items-start gap-1.5">
-                      <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                      <span>
-                        Line {err.line}, Col {err.column}: {err.message}
+              <span className={compactMetaClass}>
+                {lineCount.toLocaleString()} lines
+              </span>
+              <span className={compactMetaClass}>
+                {input.length.toLocaleString()} chars
+              </span>
+              <CopyButton text={input} label="Copy" />
+              <CopyButton text={minifiedContent} label="Copy Minified" />
+            </div>
+          </CardHeader>
+
+          <CardContent className="relative flex min-h-0 flex-1 p-0">
+            {viewMode === "text" ? (
+              <div
+                className={`relative h-full w-full min-h-0 ${
+                  isDragging ? "ring-2 ring-primary" : ""
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <Editor
+                  height="100%"
+                  path="json-formatter-buffer"
+                  language={editorLanguage}
+                  theme={editorTheme}
+                  value={input}
+                  onChange={handleEditorChange}
+                  onMount={handleEditorMount}
+                  options={editorOptions}
+                  loading={
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                      Loading editor...
+                    </div>
+                  }
+                />
+
+                {isDragging && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center border-2 border-dashed border-primary/40 bg-primary/5 backdrop-blur-sm">
+                    <div className="flex flex-col items-center gap-2 text-primary">
+                      <Upload className="h-8 w-8" />
+                      <span className="text-sm font-medium">
+                        Drop .json file here
                       </span>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Drag overlay */}
-              {isDragging && (
-                <div className="absolute inset-0 bg-primary/5 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-primary/40 rounded-md z-10">
-                  <div className="flex flex-col items-center gap-2 text-primary">
-                    <Upload className="h-8 w-8" />
-                    <span className="text-sm font-medium">
-                      Drop .json file here
-                    </span>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Output Pane */}
-          <Card className="flex flex-col border-border/50 bg-card shadow-sm overflow-hidden">
-            <CardHeader className="py-2 px-3 border-b border-border/40 bg-muted/20 shrink-0 flex flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {viewMode === "text" ? "Formatted Output" : "Tree View"}
-                </CardTitle>
-                {isValid && (
-                  <Badge
-                    variant="secondary"
-                    className="text-[10px] bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
-                  >
-                    Valid
-                  </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-1">
-                {viewMode === "tree" && treeData && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground"
-                      onClick={handleExpandAll}
-                      title="Expand All"
-                    >
-                      <ChevronsUpDown className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground"
-                      onClick={handleCollapseAll}
-                      title="Collapse All"
-                    >
-                      <ChevronsDownUp className="h-3.5 w-3.5" />
-                    </Button>
-                  </>
-                )}
-                <CopyButton text={output} label="Formatted" />
-                <CopyButton text={minifiedOutput} label="Minified" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-0 flex-1 overflow-auto bg-muted/5 scrollbar-thin">
-              {viewMode === "text" ? (
-                <textarea
-                  className="h-full w-full font-mono text-sm resize-none border-0 focus-visible:ring-0 rounded-none bg-transparent p-4 leading-relaxed text-muted-foreground"
-                  value={output}
-                  readOnly
-                  placeholder="Formatted JSON will appear here..."
+            ) : treeData ? (
+              <div className="h-full w-full overflow-auto p-1.5 scrollbar-thin">
+                <TreeNodeView
+                  node={treeData}
+                  onToggle={handleToggleTreeNode}
+                  onSelect={handleSelectNode}
+                  selectedPath={selectedPath}
+                  depth={0}
                 />
-              ) : treeData ? (
-                <div className="p-2 overflow-auto h-full scrollbar-thin">
-                  <TreeNodeView
-                    node={treeData}
-                    onToggle={handleToggleTreeNode}
-                    onSelect={handleSelectNode}
-                    selectedPath={selectedPath}
-                    searchQuery={searchQuery}
-                    depth={0}
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground/40 text-sm italic">
-                  Enter valid JSON to see tree view...
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </div>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center px-6 text-center text-sm italic text-muted-foreground/50">
+                {input.trim().length === 0
+                  ? "Enter JSON to inspect the tree."
+                  : "Resolve validation errors to inspect the tree."}
+              </div>
+            )}
+          </CardContent>
 
-        {/* ── Bottom Bar: Search + JSONPath + Breadcrumb ── */}
-        <div className="flex flex-col sm:flex-row gap-2 bg-muted/20 p-2 rounded-lg border border-border/40">
-          {/* Search */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search keys / values..."
-              className="flex-1 h-7 bg-transparent border-0 text-sm focus:outline-none placeholder:text-muted-foreground/50 min-w-0"
-            />
-            {searchMatches.length > 0 && (
-              <div className="flex items-center gap-1 shrink-0">
-                <span className="text-xs text-muted-foreground">
-                  {searchIndex + 1}/{searchMatches.length}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-5 w-5 text-muted-foreground"
-                  onClick={() => cycleSearchMatch(-1)}
-                >
-                  <ChevronRight className="h-3 w-3 rotate-180" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-5 w-5 text-muted-foreground"
-                  onClick={() => cycleSearchMatch(1)}
-                >
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/40 bg-muted/20 px-2.5 py-1 font-mono text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <span>{parseMode === "json5" ? "JSON5" : "JSON"}</span>
+              <span>{statusText}</span>
+              <span>
+                {viewMode === "text" ? "Find: Cmd/Ctrl+F" : selectedPath || "$"}
+              </span>
+            </div>
+            {viewMode === "text" ? (
+              <div className="flex items-center gap-3">
+                <span>Ln {cursorPosition.lineNumber}</span>
+                <span>Col {cursorPosition.column}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <span>{lineCount.toLocaleString()} lines</span>
+                <span>{input.length.toLocaleString()} chars</span>
+                <span>Tree</span>
               </div>
             )}
           </div>
-
-          <div className="w-px h-6 bg-border/50 hidden sm:block self-center" />
-
-          {/* JSONPath */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="text-xs font-mono text-muted-foreground shrink-0">
-              JSONPath
-            </span>
-            <input
-              type="text"
-              value={jsonPathQuery}
-              onChange={(e) => setJsonPathQuery(e.target.value)}
-              placeholder="$.store.book[*].title"
-              className="flex-1 h-7 bg-transparent border-0 text-sm font-mono focus:outline-none placeholder:text-muted-foreground/50 min-w-0"
-            />
-            {jsonPathQuery && (
-              <span className="text-xs text-muted-foreground shrink-0">
-                {jsonPathResults.length} result
-                {jsonPathResults.length !== 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
-
-          <div className="w-px h-6 bg-border/50 hidden sm:block self-center" />
-
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono truncate shrink-0 max-w-[200px] sm:max-w-[300px]">
-            <span className="truncate" title={selectedPath || "$"}>
-              {selectedPath || "$"}
-            </span>
-          </div>
-        </div>
-
-        {/* ── JSONPath Results ─────────────── */}
-        {jsonPathResults.length > 0 && (
-          <div className="bg-muted/20 border border-border/40 rounded-lg p-3 max-h-32 overflow-auto scrollbar-thin">
-            <div className="text-xs font-semibold text-muted-foreground mb-1.5">
-              JSONPath Results ({jsonPathResults.length})
-            </div>
-            <div className="space-y-1">
-              {jsonPathResults.map((result, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2 text-xs font-mono"
-                >
-                  <span className="text-muted-foreground shrink-0">
-                    {result.path}:
-                  </span>
-                  <span className="text-foreground truncate">
-                    {typeof result.value === "object"
-                      ? JSON.stringify(result.value)
-                      : String(result.value)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {jsonPathQuery && jsonPathResults.length === 0 && input.trim() && isValid && (
-          <div className="text-xs text-muted-foreground/60 italic text-center">
-            No matches found for JSONPath expression &ldquo;{jsonPathQuery}&rdquo;
-          </div>
-        )}
+        </Card>
       </div>
     </ToolShell>
   );

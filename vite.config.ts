@@ -12,6 +12,9 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
   },
+  optimizeDeps: {
+    exclude: ["monaco-editor", "@monaco-editor/react"],
+  },
   plugins: [
     react(),
   ],
