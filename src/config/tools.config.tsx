@@ -27,8 +27,8 @@ export interface ToolConfig {
   bgColor?: string;
   category: "conversion" | "generation" | "validation";
   component:
-    | React.LazyExoticComponent<React.ComponentType<any>>
-    | React.ComponentType<any>;
+    | React.LazyExoticComponent<React.ComponentType>
+    | React.ComponentType;
 }
 
 // Lazy load tool components

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Copy, RotateCcw, Check, Hash, Fingerprint } from "lucide-react";
 import { ToolShell } from "@/components/layout/ToolShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,11 +26,7 @@ export default function HashTool() {
   const [output, setOutput] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    calculateHash();
-  }, [input, algorithm, hmacEnabled, hmacKey]);
-
-  const calculateHash = () => {
+  const calculateHash = useCallback(() => {
     setError(null);
     if (!input) {
       setOutput("");
@@ -49,12 +45,16 @@ export default function HashTool() {
         hmacEnabled ? hmacKey : undefined,
       );
       setOutput(result);
-    } catch (err: any) {
-      console.warn("Hash generation failed", err);
-      setError(err.message);
+    } catch (error: unknown) {
+      console.warn("Hash generation failed", error);
+      setError(error instanceof Error ? error.message : "Hashing failed");
       setOutput("");
     }
-  };
+  }, [algorithm, hmacEnabled, hmacKey, input]);
+
+  useEffect(() => {
+    calculateHash();
+  }, [calculateHash]);
 
   const handleClear = () => {
     setInput("");

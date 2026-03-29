@@ -33,7 +33,7 @@ export default function JsonYamlTool() {
           newDirection === "json-to-yaml" ? toYaml(output) : toJson(output);
         setOutput(converted);
         setError(null);
-      } catch (err: any) {
+      } catch {
         // If swap fails, just clear output
         setOutput("");
       }
@@ -63,10 +63,12 @@ export default function JsonYamlTool() {
           converted = toJson(value);
         }
         setOutput(converted);
-      } catch (err: any) {
-        console.warn("Conversion failed", err);
+      } catch (error: unknown) {
+        console.warn("Conversion failed", error);
         // Show error immediately for better feedback
-        setError(err.message);
+        setError(
+          error instanceof Error ? error.message : "Conversion failed",
+        );
       }
     },
     [direction],

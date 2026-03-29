@@ -8,7 +8,7 @@ import yaml from "js-yaml";
  */
 export function toYaml(properties: string): string {
   const lines = properties.split("\n");
-  const obj: Record<string, any> = {};
+  const obj: Record<string, unknown> = {};
 
   lines.forEach((line) => {
     line = line.trim();
@@ -22,7 +22,7 @@ export function toYaml(properties: string): string {
 
     // Unflatten key (e.g., 'server.port' -> { server: { port: ... } })
     const parts = key.split(".");
-    let current = obj;
+    let current: Record<string, unknown> = obj;
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       if (i === parts.length - 1) {
@@ -30,10 +30,15 @@ export function toYaml(properties: string): string {
         current[part] = parseValue(value);
       } else {
         // Initialize next level if needed
-        if (!current[part] || typeof current[part] !== "object") {
+        const existingValue = current[part];
+        if (
+          !existingValue ||
+          typeof existingValue !== "object" ||
+          Array.isArray(existingValue)
+        ) {
           current[part] = {};
         }
-        current = current[part];
+        current = current[part] as Record<string, unknown>;
       }
     }
   });
@@ -50,43 +55,40 @@ export function toYaml(properties: string): string {
  */
 export function toProperties(yamlStr: string): string {
   try {
-    const obj = yaml.load(yamlStr);
-    if (!obj || typeof obj !== "object") return "";
+    const parsed = yaml.load(yamlStr);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return "";
+    }
 
-    const flattened = flatten(obj);
+    const flattened = flatten(parsed as Record<string, unknown>);
     return Object.entries(flattened)
       .map(([key, value]) => `${key}=${value}`)
       .join("\n");
-  } catch (e: any) {
-    throw new Error(e.message || "Invalid YAML");
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : "Invalid YAML");
   }
 }
 
-function parseValue(val: string): any {
+function parseValue(val: string): string | number | boolean {
   if (val === "true") return true;
   if (val === "false") return false;
   if (!isNaN(Number(val)) && val.trim() !== "") return Number(val);
   return val;
 }
 
-function flatten(obj: any, prefix = ""): Record<string, any> {
-  let result: Record<string, any> = {};
+function flatten(
+  obj: Record<string, unknown>,
+  prefix = "",
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
 
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const newKey = prefix ? `${prefix}.${key}` : key;
-      const value = obj[key];
+  for (const [key, value] of Object.entries(obj)) {
+    const newKey = prefix ? `${prefix}.${key}` : key;
 
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        !Array.isArray(value)
-      ) {
-        const deep = flatten(value, newKey);
-        result = { ...result, ...deep };
-      } else {
-        result[newKey] = value;
-      }
+    if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+      Object.assign(result, flatten(value as Record<string, unknown>, newKey));
+    } else {
+      result[newKey] = value;
     }
   }
 

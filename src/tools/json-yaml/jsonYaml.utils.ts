@@ -11,8 +11,8 @@ export function toJson(yamlStr: string): string {
   try {
     const obj = yaml.load(yamlStr);
     return JSON.stringify(obj, null, 2);
-  } catch (e: any) {
-    throw new Error(e.message || "Invalid YAML");
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : "Invalid YAML");
   }
 }
 
@@ -27,7 +27,7 @@ export function toYaml(jsonStr: string): string {
   try {
     const obj = JSON.parse(jsonStr);
     return yaml.dump(obj, { indent: 2 });
-  } catch (e: any) {
-    throw new Error(e.message || "Invalid JSON");
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : "Invalid JSON");
   }
 }

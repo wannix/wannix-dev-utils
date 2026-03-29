@@ -49,10 +49,12 @@ export default function SpringYamlTool() {
           converted = toProperties(value);
         }
         setOutput(converted);
-      } catch (err: any) {
-        console.warn("Conversion failed", err);
+      } catch (error: unknown) {
+        console.warn("Conversion failed", error);
+        const message =
+          error instanceof Error ? error.message : "Conversion failed";
         if (direction === "yaml-to-prop") {
-          setError(err.message);
+          setError(message);
         } else {
           // For prop-to-yaml, we might not want to show error immediately as user types
           // unless it's a critical parsing error
