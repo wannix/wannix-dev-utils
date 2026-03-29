@@ -222,6 +222,21 @@ interface FindControllerContribution {
   closeFindWidget: () => void;
 }
 
+function getFindWidgetState(
+  editor: monacoApi.editor.IStandaloneCodeEditor | null,
+): { isVisible: boolean; isReplaceVisible: boolean } {
+  const editorDomNode = editor?.getDomNode();
+  const findWidget = editorDomNode?.querySelector(
+    ".find-widget",
+  ) as HTMLElement | null;
+
+  const isVisible = Boolean(findWidget?.classList.contains("visible"));
+  const isReplaceVisible =
+    isVisible && Boolean(findWidget?.classList.contains("replaceToggled"));
+
+  return { isVisible, isReplaceVisible };
+}
+
 function getFindController(
   editor: monacoApi.editor.IStandaloneCodeEditor,
 ): FindControllerContribution | null {
@@ -232,11 +247,14 @@ function getFindController(
   }
 
   const candidate = contribution as { closeFindWidget?: unknown };
-  if (typeof candidate.closeFindWidget !== "function") {
+  const closeFindWidget = candidate.closeFindWidget;
+  if (typeof closeFindWidget !== "function") {
     return null;
   }
 
-  return contribution as FindControllerContribution;
+  return {
+    closeFindWidget: () => Reflect.apply(closeFindWidget, contribution, []),
+  };
 }
 
 export default function JsonFormatterTool(): JSX.Element {
@@ -428,10 +446,7 @@ export default function JsonFormatterTool(): JSX.Element {
           });
         }
 
-        const isVisible = Boolean(findWidget?.classList.contains("visible"));
-        const isReplaceVisible =
-          isVisible &&
-          Boolean(findWidget?.classList.contains("replaceToggled"));
+        const { isVisible, isReplaceVisible } = getFindWidgetState(editor);
 
         setIsFindWidgetOpen(isVisible);
         setIsReplaceWidgetOpen(isReplaceVisible);
@@ -471,14 +486,9 @@ export default function JsonFormatterTool(): JSX.Element {
     }
 
     requestAnimationFrame(() => {
-      const editorDomNode = editorRef.current?.getDomNode();
-      const findWidget = editorDomNode?.querySelector(
-        ".find-widget",
-      ) as HTMLElement | null;
-
-      const isVisible = Boolean(findWidget?.classList.contains("visible"));
-      const isReplaceVisible =
-        isVisible && Boolean(findWidget?.classList.contains("replaceToggled"));
+      const { isVisible, isReplaceVisible } = getFindWidgetState(
+        editorRef.current,
+      );
 
       setIsFindWidgetOpen(isVisible);
       setIsReplaceWidgetOpen(isReplaceVisible);
@@ -654,8 +664,9 @@ export default function JsonFormatterTool(): JSX.Element {
     }
 
     editor.focus();
+    const { isVisible, isReplaceVisible } = getFindWidgetState(editor);
 
-    if (isReplaceWidgetOpen) {
+    if (isReplaceVisible) {
       getFindController(editor)?.closeFindWidget();
       void editor.getAction("actions.find")?.run();
       setIsFindWidgetOpen(true);
@@ -663,7 +674,7 @@ export default function JsonFormatterTool(): JSX.Element {
       return;
     }
 
-    if (isFindWidgetOpen) {
+    if (isVisible) {
       closeSearchWidgets();
       return;
     }
@@ -671,7 +682,7 @@ export default function JsonFormatterTool(): JSX.Element {
     void editor.getAction("actions.find")?.run();
     setIsFindWidgetOpen(true);
     setIsReplaceWidgetOpen(false);
-  }, [closeSearchWidgets, isFindWidgetOpen, isReplaceWidgetOpen, viewMode]);
+  }, [closeSearchWidgets, viewMode]);
 
   const handleToggleReplaceWidget = useCallback(() => {
     if (viewMode !== "text") {
@@ -684,8 +695,9 @@ export default function JsonFormatterTool(): JSX.Element {
     }
 
     editor.focus();
+    const { isReplaceVisible } = getFindWidgetState(editor);
 
-    if (isReplaceWidgetOpen) {
+    if (isReplaceVisible) {
       closeSearchWidgets();
       return;
     }
@@ -693,7 +705,7 @@ export default function JsonFormatterTool(): JSX.Element {
     void editor.getAction("editor.action.startFindReplaceAction")?.run();
     setIsFindWidgetOpen(true);
     setIsReplaceWidgetOpen(true);
-  }, [closeSearchWidgets, isReplaceWidgetOpen, viewMode]);
+  }, [closeSearchWidgets, viewMode]);
 
   const handleFileImport = useCallback(
     (file: File) => {
