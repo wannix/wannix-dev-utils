@@ -4,9 +4,7 @@ import type {
   IndentStyle,
   ValidationError,
   TreeNode,
-  SearchMatch,
   DuplicateKeyWarning,
-  JsonPathResult,
 } from "./json-formatter.types";
 
 // ──────────────────────────────────────────────
@@ -21,9 +19,10 @@ export function formatJson(
   input: string,
   indent: IndentStyle = "2-spaces",
   sortKeys = false,
+  json5Mode = false,
 ): string {
   if (!input.trim()) return "";
-  const parsed: unknown = JSON.parse(input);
+  const parsed = parseInput(input, json5Mode);
   const data = sortKeys ? sortKeysDeep(parsed) : parsed;
   return JSON.stringify(data, null, INDENT_MAP[indent]);
 }
@@ -31,9 +30,9 @@ export function formatJson(
 /**
  * Minifies a JSON string into a single line.
  */
-export function minifyJson(input: string): string {
+export function minifyJson(input: string, json5Mode = false): string {
   if (!input.trim()) return "";
-  return JSON.stringify(JSON.parse(input));
+  return JSON.stringify(parseInput(input, json5Mode));
 }
 
 // ──────────────────────────────────────────────
@@ -76,7 +75,7 @@ export function validateJson(input: string): ValidationError[] {
     return [];
   } catch (err) {
     if (err instanceof SyntaxError) {
-      const { line, column } = extractPosition(err.message, input);
+      const { line, column } = extractPosition(err, input);
       return [
         {
           message: humanizeJsonError(err.message),
@@ -99,7 +98,7 @@ export function validateJson5(input: string): ValidationError[] {
     return [];
   } catch (err) {
     if (err instanceof SyntaxError) {
-      const { line, column } = extractPosition(err.message, input);
+      const { line, column } = extractPosition(err, input);
       return [
         {
           message: humanizeJsonError(err.message),
@@ -117,9 +116,26 @@ export function validateJson5(input: string): ValidationError[] {
  * Different engines format the message differently.
  */
 function extractPosition(
-  message: string,
+  error: SyntaxError,
   input: string,
 ): { line: number; column: number } {
+  const errorWithLocation = error as SyntaxError & {
+    lineNumber?: number;
+    columnNumber?: number;
+  };
+
+  if (
+    typeof errorWithLocation.lineNumber === "number" &&
+    typeof errorWithLocation.columnNumber === "number"
+  ) {
+    return {
+      line: errorWithLocation.lineNumber,
+      column: errorWithLocation.columnNumber,
+    };
+  }
+
+  const { message } = error;
+
   // V8: "... at position 42"
   const posMatch = message.match(/position\s+(\d+)/i);
   if (posMatch) {
@@ -134,17 +150,6 @@ function extractPosition(
       line: parseInt(lineColMatch[1], 10),
       column: parseInt(lineColMatch[2], 10),
     };
-  }
-
-  // JSON5 errors often include lineNumber/columnNumber
-  const errObj = message as unknown as Record<string, unknown>;
-  if (typeof errObj === "object" && errObj !== null) {
-    if ("lineNumber" in errObj && "columnNumber" in errObj) {
-      return {
-        line: Number(errObj.lineNumber),
-        column: Number(errObj.columnNumber),
-      };
-    }
   }
 
   return { line: 1, column: 1 };
@@ -328,185 +333,6 @@ function getValueType(
     default:
       return "object";
   }
-}
-
-// ──────────────────────────────────────────────
-// JSONPath Evaluator (lightweight)
-// ──────────────────────────────────────────────
-
-/**
- * Evaluates a JSONPath expression against a parsed JSON object.
- * Supports: $, dot notation, bracket notation, wildcards [*],
- * recursive descent (..).
- */
-export function evaluateJsonPath(
-  obj: unknown,
-  expression: string,
-): JsonPathResult[] {
-  if (!expression || !expression.startsWith("$")) return [];
-  const results: JsonPathResult[] = [];
-
-  // Tokenize: split on . or [ while keeping brackets
-  const tokens = tokenizePath(expression.slice(1)); // Remove leading $
-
-  function walk(
-    current: unknown,
-    tokenIndex: number,
-    currentPath: string,
-  ): void {
-    if (tokenIndex >= tokens.length) {
-      results.push({ path: currentPath || "$", value: current });
-      return;
-    }
-
-    const token = tokens[tokenIndex];
-
-    if (token === "") {
-      // Skip empty tokens from consecutive dots
-      walk(current, tokenIndex + 1, currentPath);
-      return;
-    }
-
-    // Recursive descent (..)
-    if (token === "..") {
-      // Try remaining tokens at every level
-      walk(current, tokenIndex + 1, currentPath);
-      if (current !== null && typeof current === "object") {
-        const entries = Array.isArray(current)
-          ? current.map((v, i) => [String(i), v] as const)
-          : Object.entries(current as Record<string, unknown>);
-        for (const [key, val] of entries) {
-          walk(val, tokenIndex, `${currentPath}.${key}`);
-        }
-      }
-      return;
-    }
-
-    // Wildcard
-    if (token === "*" || token === "[*]") {
-      if (current !== null && typeof current === "object") {
-        const entries = Array.isArray(current)
-          ? current.map((v, i) => [String(i), v] as const)
-          : Object.entries(current as Record<string, unknown>);
-        for (const [key, val] of entries) {
-          walk(val, tokenIndex + 1, `${currentPath}.${key}`);
-        }
-      }
-      return;
-    }
-
-    // Bracket index (e.g. [0], [1])
-    const bracketMatch = token.match(/^\[(\d+)\]$/);
-    if (bracketMatch) {
-      const idx = parseInt(bracketMatch[1], 10);
-      if (Array.isArray(current) && idx < current.length) {
-        walk(current[idx], tokenIndex + 1, `${currentPath}[${idx}]`);
-      }
-      return;
-    }
-
-    // Regular property access
-    if (current !== null && typeof current === "object" && !Array.isArray(current)) {
-      const obj = current as Record<string, unknown>;
-      if (token in obj) {
-        walk(obj[token], tokenIndex + 1, `${currentPath}.${token}`);
-      }
-    }
-  }
-
-  walk(obj, 0, "$");
-  return results;
-}
-
-/**
- * Tokenizes a JSONPath expression into segments.
- */
-function tokenizePath(path: string): string[] {
-  const tokens: string[] = [];
-  let current = "";
-
-  for (let i = 0; i < path.length; i++) {
-    const ch = path[i];
-    if (ch === ".") {
-      if (current) tokens.push(current);
-      current = "";
-      // Check for ..
-      if (path[i + 1] === ".") {
-        tokens.push("..");
-        i++; // skip next dot
-      }
-    } else if (ch === "[") {
-      if (current) tokens.push(current);
-      current = "";
-      // Read until ]
-      let bracket = "[";
-      i++;
-      while (i < path.length && path[i] !== "]") {
-        bracket += path[i];
-        i++;
-      }
-      bracket += "]";
-      tokens.push(bracket);
-    } else {
-      current += ch;
-    }
-  }
-
-  if (current) tokens.push(current);
-  return tokens;
-}
-
-// ──────────────────────────────────────────────
-// Search
-// ──────────────────────────────────────────────
-
-/**
- * Recursively searches a parsed JSON object for keys or values
- * that match the given query (case-insensitive).
- */
-export function searchInObject(
-  obj: unknown,
-  query: string,
-  path: string[] = [],
-): SearchMatch[] {
-  if (!query) return [];
-  const results: SearchMatch[] = [];
-  const q = query.toLowerCase();
-
-  if (obj === null || obj === undefined) return results;
-
-  if (Array.isArray(obj)) {
-    obj.forEach((item, index) => {
-      const itemPath = [...path, String(index)];
-      // Check if value itself matches
-      if (typeof item !== "object" || item === null) {
-        if (String(item).toLowerCase().includes(q)) {
-          results.push({ path: itemPath, value: String(item) });
-        }
-      }
-      results.push(...searchInObject(item, query, itemPath));
-    });
-  } else if (typeof obj === "object") {
-    Object.entries(obj as Record<string, unknown>).forEach(([key, value]) => {
-      const keyPath = [...path, key];
-      // Check key
-      if (key.toLowerCase().includes(q)) {
-        results.push({ path: keyPath, key });
-      }
-      // Check primitive value
-      if (value !== null && typeof value !== "object") {
-        if (String(value).toLowerCase().includes(q)) {
-          results.push({ path: keyPath, value: String(value) });
-        }
-      }
-      // Recurse into children
-      if (value !== null && typeof value === "object") {
-        results.push(...searchInObject(value, query, keyPath));
-      }
-    });
-  }
-
-  return results;
 }
 
 // ──────────────────────────────────────────────

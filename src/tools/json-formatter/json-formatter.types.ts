@@ -19,18 +19,7 @@ export interface TreeNode {
   collapsed: boolean;
 }
 
-export interface SearchMatch {
-  path: string[];
-  key?: string;
-  value?: string;
-}
-
 export interface DuplicateKeyWarning {
   key: string;
   lines: number[];
-}
-
-export interface JsonPathResult {
-  path: string;
-  value: unknown;
 }
